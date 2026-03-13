@@ -1,4 +1,4 @@
-name: Rabie_Ibo_Pro_V29_Series_Fix
+name: Rabie_Ultimate_V30
 on: [push]
 jobs:
   build:
@@ -8,7 +8,7 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_Ibo_Pro_Series
+      - name: Build_Professional_App
         run: |
           rm -rf app settings.gradle build.gradle gradle.properties .gradle
           echo "android.useAndroidX=true" > gradle.properties
@@ -27,44 +27,50 @@ jobs:
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/values
 
+          # ألوان إيبو بلاير الأصلية
           cat <<EOF > app/src/main/res/values/colors.xml
           <resources>
               <color name="black">#FF000000</color>
               <color name="ibo_orange">#ffff9100</color>
               <color name="card_bg">#1A1A1A</color>
+              <color name="gray_text">#AAAAAA</color>
           </resources>
           EOF
 
-          # تصميم الكارد
+          # تصميم الكارد (بوستر الفيلم مع اللوغو)
           cat <<EOF > app/src/main/res/layout/item_card.xml
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent" android:layout_height="wrap_content"
               android:orientation="vertical" android:padding="4dp" android:gravity="center">
-              <ImageView android:id="@+id/img_logo" android:layout_width="110dp" android:layout_height="160dp"
-                  android:scaleType="centerCrop" android:background="#222"/>
-              <TextView android:id="@+id/txt_name" android:layout_width="match_parent" android:layout_height="wrap_content"
-                  android:textColor="#FFF" android:textSize="9sp" android:gravity="center" android:lines="1"/>
+              <androidx.cardview.widget.CardView android:layout_width="110dp" android:layout_height="160dp" xmlns:app="http://schemas.android.com/apk/res-auto" app:cardCornerRadius="8dp">
+                  <ImageView android:id="@+id/img_logo" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="centerCrop" android:background="#222"/>
+              </androidx.cardview.widget.CardView>
+              <TextView android:id="@+id/txt_name" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#FFF" android:textSize="9sp" android:gravity="center" android:lines="1" android:layout_marginTop="2dp"/>
           </LinearLayout>
           EOF
 
-          # الواجهة الرئيسية
+          # الواجهة الاحترافية (البحث + الأقسام + المشغل)
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent" android:layout_height="match_parent" android:background="#0a0714">
               
               <LinearLayout android:id="@+id/main_ui" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
-                  <LinearLayout android:layout_width="match_parent" android:layout_height="50dp" android:gravity="center_vertical" android:padding="8dp" android:background="#000">
-                      <TextView android:id="@+id/nav_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE PRO TV" android:textColor="#ff9100" android:textStyle="bold"/>
+                  <LinearLayout android:layout_width="match_parent" android:layout_height="55dp" android:gravity="center_vertical" android:padding="5dp" android:background="#000">
+                      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE PRO" android:textColor="#ff9100" android:textStyle="bold" android:layout_marginRight="10dp"/>
+                      <EditText android:id="@+id/et_search" android:layout_width="150dp" android:layout_height="35dp" android:hint="بحث سريع..." android:textColor="#FFF" android:background="#1c142e" android:paddingLeft="10dp" android:textSize="12sp"/>
                       <View android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"/>
                       <Button android:id="@+id/b_live" android:layout_width="wrap_content" android:layout_height="35dp" android:text="LIVE" android:textSize="8sp"/>
-                      <Button android:id="@+id/b_movies" android:layout_width="wrap_content" android:layout_height="35dp" android:text="MOVIES" android:textSize="8sp" android:layout_marginLeft="5dp"/>
-                      <Button android:id="@+id/b_series" android:layout_width="wrap_content" android:layout_height="35dp" android:text="SERIES" android:textSize="8sp" android:layout_marginLeft="5dp"/>
+                      <Button android:id="@+id/b_vod" android:layout_width="wrap_content" android:layout_height="35dp" android:text="VOD" android:textSize="8sp" android:layout_marginLeft="5dp"/>
+                      <Button android:id="@+id/b_fav" android:layout_width="wrap_content" android:layout_height="35dp" android:text="FAV" android:textSize="8sp" android:backgroundTint="#d32f2f" android:layout_marginLeft="5dp"/>
                   </LinearLayout>
 
                   <LinearLayout android:id="@+id/lay_live" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal">
-                      <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_g" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.3" android:background="#1c142e"/>
+                      <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_g" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.25" android:background="#1c142e"/>
                       <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_i" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.3" android:background="#130d21"/>
-                      <androidx.media3.ui.PlayerView android:id="@+id/pv_small" android:layout_width="0dp" android:layout_height="240dp" android:layout_weight="0.4" xmlns:app="http://schemas.android.com/apk/res-auto" app:use_controller="false"/>
+                      <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.45" android:orientation="vertical">
+                          <androidx.media3.ui.PlayerView android:id="@+id/pv_small" android:layout_width="match_parent" android:layout_height="240dp" xmlns:app="http://schemas.android.com/apk/res-auto" app:use_controller="false"/>
+                          <TextView android:id="@+id/t_status" android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="10dp" android:textColor="#ff9100" android:text="انقر مرتين للتكبير"/>
+                      </LinearLayout>
                   </LinearLayout>
 
                   <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_grid" android:layout_width="match_parent" android:layout_height="match_parent" android:visibility="gone" android:padding="5dp"/>
@@ -75,10 +81,11 @@ jobs:
           </RelativeLayout>
           EOF
 
-          # كود الجافا (تنظيم المسلسلات)
+          # كود الجافا (الاحترافي الكامل)
           cat <<EOF > app/src/main/java/com/rabie/iptv/MainActivity.java
           package com.rabie.iptv;
-          import android.os.Bundle;
+          import android.os.*;
+          import android.text.*;
           import android.view.*;
           import android.widget.*;
           import androidx.appcompat.app.AppCompatActivity;
@@ -95,78 +102,96 @@ jobs:
               private PlayerView pvSmall, pvFull;
               private View mainUI, layLive;
               private RecyclerView rvG, rvI, rvGrid;
-              private Map<String, List<Ch>> live = new LinkedHashMap<>(), movies = new LinkedHashMap<>(), series = new LinkedHashMap<>();
-              private TextView navTitle;
-              class Ch { String n, u, g, l; }
+              private List<Ch> allData = new ArrayList<>(), favList = new ArrayList<>();
+              private Map<String, List<Ch>> live = new LinkedHashMap<>(), vod = new LinkedHashMap<>();
+              
+              class Ch { String n, u, g, l; } // Name, URL, Group, Logo
 
               @Override
               protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
                   setContentView(R.layout.activity_main);
+                  
                   player = new ExoPlayer.Builder(this).build();
                   pvSmall = findViewById(R.id.pv_small); pvFull = findViewById(R.id.pv_full);
                   mainUI = findViewById(R.id.main_ui); layLive = findViewById(R.id.lay_live);
                   rvG = findViewById(R.id.rv_g); rvI = findViewById(R.id.rv_i); rvGrid = findViewById(R.id.rv_grid);
-                  navTitle = findViewById(R.id.nav_title);
                   
                   pvSmall.setPlayer(player); pvFull.setPlayer(player);
                   rvG.setLayoutManager(new LinearLayoutManager(this));
                   rvI.setLayoutManager(new LinearLayoutManager(this));
-                  rvGrid.setLayoutManager(new GridLayoutManager(this, 6));
+                  rvGrid.setLayoutManager(new GridLayoutManager(this, 5));
 
                   loadData();
+                  setupSearch();
                   setupGestures();
+
                   findViewById(R.id.b_live).setOnClickListener(v -> { layLive.setVisibility(View.VISIBLE); rvGrid.setVisibility(View.GONE); });
-                  findViewById(R.id.b_movies).setOnClickListener(v -> showGrid(movies));
-                  findViewById(R.id.b_series).setOnClickListener(v -> showGrid(series));
-              }
-
-              private void setupGestures() {
-                  GestureDetector gd = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
-                      @Override public boolean onDoubleTap(MotionEvent e) { toggleFull(true); return true; }
-                  });
-                  pvSmall.setOnTouchListener((v, ev) -> gd.onTouchEvent(ev));
-              }
-
-              private void toggleFull(boolean full) {
-                  pvFull.setVisibility(full ? View.VISIBLE : View.GONE);
-                  mainUI.setVisibility(full ? View.GONE : View.VISIBLE);
+                  findViewById(R.id.b_vod).setOnClickListener(v -> showVod(false));
+                  findViewById(R.id.b_fav).setOnClickListener(v -> showVod(true));
               }
 
               private void loadData() {
                   String url = "https://gist.githubusercontent.com/rabiebobo3/d498347610d7312b3e9be88093117620/raw/list.m3u";
                   Volley.newRequestQueue(this).add(new StringRequest(url, res -> {
-                      parse(res); rvG.setAdapter(new GAdapter(new ArrayList<>(live.keySet())));
+                      parse(res);
+                      rvG.setAdapter(new GAdapter(new ArrayList<>(live.keySet())));
                   }, null));
               }
 
               private void parse(String text) {
+                  allData.clear(); live.clear(); vod.clear();
                   String[] lines = text.split("\n"); Ch cur = null;
                   for (String l : lines) {
                       if (l.contains("#EXTINF:")) {
-                          cur = new Ch(); cur.n = l.split(",")[1].trim();
+                          cur = new Ch();
+                          cur.n = l.contains(",") ? l.split(",")[1].trim() : "Unknown";
                           cur.g = l.contains("group-title=\"") ? l.split("group-title=\"")[1].split("\"")[0] : "General";
                           cur.l = l.contains("tvg-logo=\"") ? l.split("tvg-logo=\"")[1].split("\"")[0] : "";
                       } else if (l.startsWith("http") && cur != null) {
                           cur.u = l.trim();
+                          allData.add(cur);
                           String g = cur.g.toLowerCase();
-                          if (g.contains("movie")) movies.computeIfAbsent(cur.g, k -> new ArrayList<>()).add(cur);
-                          else if (g.contains("series")) series.computeIfAbsent(cur.g, k -> new ArrayList<>()).add(cur);
+                          if (g.contains("movie") || g.contains("series")) vod.computeIfAbsent(cur.g, k -> new ArrayList<>()).add(cur);
                           else live.computeIfAbsent(cur.g, k -> new ArrayList<>()).add(cur);
                           cur = null;
                       }
                   }
               }
 
-              private void showGrid(Map<String, List<Ch>> data) {
+              private void setupSearch() {
+                  ((EditText)findViewById(R.id.et_search)).addTextChangedListener(new TextWatcher() {
+                      public void onTextChanged(CharSequence s, int st, int b, int c) {
+                          List<Ch> f = new ArrayList<>();
+                          for(Ch item : allData) if(item.n.toLowerCase().contains(s.toString().toLowerCase())) f.add(item);
+                          layLive.setVisibility(View.GONE); rvGrid.setVisibility(View.VISIBLE);
+                          rvGrid.setAdapter(new CardAdapter(f));
+                      }
+                      public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
+                      public void afterTextChanged(Editable s) {}
+                  });
+              }
+
+              private void showVod(boolean showFav) {
                   layLive.setVisibility(View.GONE); rvGrid.setVisibility(View.VISIBLE);
-                  List<Ch> all = new ArrayList<>(); for(List<Ch> l : data.values()) all.addAll(l);
-                  rvGrid.setAdapter(new CardAdapter(all));
+                  if(showFav) rvGrid.setAdapter(new CardAdapter(favList));
+                  else {
+                      List<Ch> allVod = new ArrayList<>(); for(List<Ch> l : vod.values()) allVod.addAll(l);
+                      rvGrid.setAdapter(new CardAdapter(allVod));
+                  }
+              }
+
+              private void setupGestures() {
+                  GestureDetector gd = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+                      @Override public boolean onDoubleTap(MotionEvent e) {
+                          pvFull.setVisibility(View.VISIBLE); mainUI.setVisibility(View.GONE); return true;
+                      }
+                  });
+                  pvSmall.setOnTouchListener((v, ev) -> gd.onTouchEvent(ev));
               }
 
               @Override public void onBackPressed() {
-                  if (pvFull.getVisibility() == View.VISIBLE) toggleFull(false);
-                  else if (rvGrid.getVisibility() == View.VISIBLE) { rvGrid.setVisibility(View.GONE); layLive.setVisibility(View.VISIBLE); }
+                  if (pvFull.getVisibility() == View.VISIBLE) { pvFull.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE); }
                   else super.onBackPressed();
               }
 
@@ -180,10 +205,17 @@ jobs:
 
               class IAdapter extends RecyclerView.Adapter<IAdapter.VH> {
                   List<Ch> items; IAdapter(List<Ch> i) { items = i; }
-                  @Override public VH onCreateViewHolder(ViewGroup p, int t) { TextView tv = new TextView(p.getContext()); tv.setPadding(20,20,20,20); tv.setTextColor(-1); return new VH(tv); }
-                  @Override public void onBindViewHolder(VH h, int i) { h.tv.setText(items.get(i).n); h.tv.setOnClickListener(v -> { player.setMediaItem(MediaItem.fromUri(items.get(i).u)); player.prepare(); player.play(); }); }
+                  @Override public VH onCreateViewHolder(ViewGroup p, int t) {
+                      View v = LayoutInflater.from(p.getContext()).inflate(android.R.layout.simple_list_item_1, p, false);
+                      TextView tv = v.findViewById(android.R.id.text1); tv.setTextColor(-1); tv.setTextSize(12sp); return new VH(v);
+                  }
+                  @Override public void onBindViewHolder(VH h, int i) {
+                      Ch c = items.get(i); ((TextView)h.itemView).setText(c.n);
+                      h.itemView.setOnClickListener(v -> { player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play(); });
+                      h.itemView.setOnLongClickListener(v -> { if(!favList.contains(c)) favList.add(c); Toast.makeText(MainActivity.this, "أضيفت للمفضلة", 0).show(); return true; });
+                  }
                   @Override public int getItemCount() { return items.size(); }
-                  class VH extends RecyclerView.ViewHolder { TextView tv; VH(View v) { super(v); tv = (TextView)v; } }
+                  class VH extends RecyclerView.ViewHolder { VH(View v) { super(v); } }
               }
 
               class CardAdapter extends RecyclerView.Adapter<CardAdapter.VH> {
@@ -192,7 +224,10 @@ jobs:
                   @Override public void onBindViewHolder(VH h, int i) {
                       Ch c = items.get(i); h.name.setText(c.n);
                       Glide.with(MainActivity.this).load(c.l).placeholder(android.R.drawable.ic_menu_gallery).into(h.img);
-                      h.itemView.setOnClickListener(v -> { toggleFull(true); player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play(); });
+                      h.itemView.setOnClickListener(v -> {
+                          pvFull.setVisibility(View.VISIBLE); mainUI.setVisibility(View.GONE);
+                          player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play();
+                      });
                   }
                   @Override public int getItemCount() { return items.size(); }
                   class VH extends RecyclerView.ViewHolder { ImageView img; TextView name; VH(View v) { super(v); img=v.findViewById(R.id.img_logo); name=v.findViewById(R.id.txt_name); } }
@@ -208,17 +243,18 @@ jobs:
               implementation 'androidx.media3:media3-exoplayer:1.2.1'
               implementation 'androidx.media3:media3-ui:1.2.1'
               implementation 'androidx.recyclerview:recyclerview:1.3.0'
+              implementation 'androidx.cardview:cardview:1.0.0'
               implementation 'com.android.volley:volley:1.2.1'
               implementation 'com.github.bumptech.glide:glide:4.16.0'
           }
           EOF
           
-          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:label="Rabie Ibo Pro"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
+          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:label="Rabie Pro V30"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
           
           gradle wrapper --gradle-version 8.5
           chmod +x gradlew
           ./gradlew :app:assembleDebug --no-daemon
 
-      - name: Upload_V29
+      - name: Upload_V30
         uses: actions/upload-artifact@v4
-        with: { name: Rabie_Ibo_V29, path: app/build/outputs/apk/debug/*.apk }
+        with: { name: Rabie_Ultimate_V30, path: app/build/outputs/apk/debug/*.apk }
