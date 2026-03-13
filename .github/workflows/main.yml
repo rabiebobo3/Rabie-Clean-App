@@ -1,4 +1,4 @@
-name: Rabie_Ultimate_Universal_IPTV
+name: Rabie_Ultimate_Universal_IPTV_Fixed
 on: [push]
 jobs:
   build:
@@ -8,7 +8,7 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_Fixed_Universal_NoSleep_App
+      - name: Build_Fixed_Pro_App
         run: |
           rm -rf app settings.gradle build.gradle gradle.properties .gradle
           echo "android.useAndroidX=true" > gradle.properties
@@ -28,52 +28,62 @@ jobs:
           mkdir -p app/src/main/res/values
           mkdir -p app/src/main/res/drawable
 
-          # خلفية التحديد للريموت
-          echo '<selector xmlns:android="http://schemas.android.com/apk/res/android"><item android:state_focused="true" android:drawable="#ff9100"/><item android:drawable="#1c142e"/></selector>' > app/src/main/res/drawable/selector.xml
-
+          # تعريف الألوان بشكل صحيح لتفادي الخطأ السابق
           cat <<EOF > app/src/main/res/values/colors.xml
           <resources>
               <color name="bg_dark">#0a0714</color>
               <color name="accent_orange">#ff9100</color>
               <color name="panel_dark">#1c142e</color>
+              <color name="white">#FFFFFF</color>
+              <color name="black">#000000</color>
           </resources>
           EOF
 
-          # تصميم شاشة الترحيب (Splash Screen)
-          mkdir -p app/src/main/res/drawable
-          # هنا، إذا كان لديك اللوغو كـ PNG، ضعه كـ app/src/main/res/drawable/logo.png، وإلا سنستخدم نصاً كبديل
+          # تصحيح ملف selector باستخدام مراجع الألوان (هذا هو حل المشكلة)
+          cat <<EOF > app/src/main/res/drawable/selector.xml
+          <selector xmlns:android="http://schemas.android.com/apk/res/android">
+              <item android:state_focused="true"><color android:color="@color/accent_orange"/></item>
+              <item><color android:color="@color/panel_dark"/></item>
+          </selector>
+          EOF
+
+          # شاشة الترحيب (Splash Screen) مع اللوجو
           cat <<EOF > app/src/main/res/layout/activity_splash.xml
           <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent" android:layout_height="match_parent" android:background="#000000" android:gravity="center">
+              android:layout_width="match_parent" android:layout_height="match_parent" 
+              android:background="@color/black" android:gravity="center">
               <TextView android:id="@+id/logo_text" android:layout_width="wrap_content" android:layout_height="wrap_content" 
-                  android:text="RABIE-\nTV PRO" android:textColor="#ff9100" android:textSize="40sp" android:textStyle="bold" android:gravity="center" android:layout_marginBottom="20dp"/>
-              <ProgressBar android:layout_width="40dp" android:layout_height="40dp" android:layout_below="@id/logo_text" android:layout_centerHorizontal="true" android:indeterminate="true" android:indeterminateTint="#ff9100"/>
+                  android:text="RABIE-TV PRO" android:textColor="@color/accent_orange" android:textSize="45sp" 
+                  android:textStyle="bold" android:gravity="center"/>
+              <ProgressBar android:layout_width="45dp" android:layout_height="45dp" 
+                  android:layout_below="@id/logo_text" android:layout_centerHorizontal="true" 
+                  android:layout_marginTop="25dp" android:indeterminateTint="@color/accent_orange"/>
           </RelativeLayout>
           EOF
 
-          # واجهة المستخدم الاحترافية
+          # الواجهة الرئيسية (Main Layout)
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent" android:layout_height="match_parent"
-              android:orientation="vertical" android:background="@color/bg_dark">
-              <LinearLayout android:id="@+id/top_bar" android:layout_width="match_parent" android:layout_height="50dp"
-                  android:orientation="horizontal" android:gravity="center_vertical" android:padding="10dp" android:background="#000">
+              android:orientation="vertical" android:background="@color/bg_dark" android:keepScreenOn="true">
+              <LinearLayout android:id="@+id/top_bar" android:layout_width="match_parent" android:layout_height="55dp"
+                  android:orientation="horizontal" android:gravity="center_vertical" android:padding="10dp" android:background="@color/black">
                   <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" 
-                      android:text="RABIE PRO TV" android:textColor="@color/accent_orange" android:textStyle="bold"/>
+                      android:text="RABIE PRO TV" android:textColor="@color/accent_orange" android:textStyle="bold" android:textSize="18sp"/>
                   <View android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"/>
-                  <Button android:id="@+id/btn_live" android:layout_width="wrap_content" android:layout_height="35dp" android:text="قنوات" android:textSize="9sp" android:backgroundTint="#1c142e"/>
-                  <Button android:id="@+id/btn_movies" android:layout_width="wrap_content" android:layout_height="35dp" android:text="أفلام" android:textSize="9sp" android:backgroundTint="#1c142e" android:layout_marginLeft="4dp"/>
-                  <Button android:id="@+id/btn_series" android:layout_width="wrap_content" android:layout_height="35dp" android:text="مسلسلات" android:textSize="9sp" android:backgroundTint="#1c142e" android:layout_marginLeft="4dp"/>
+                  <Button android:id="@+id/btn_live" android:layout_width="wrap_content" android:layout_height="40dp" android:text="القنوات" android:backgroundTint="@color/panel_dark" android:layout_marginRight="5dp"/>
+                  <Button android:id="@+id/btn_movies" android:layout_width="wrap_content" android:layout_height="40dp" android:text="الأفلام" android:backgroundTint="@color/panel_dark" android:layout_marginRight="5dp"/>
+                  <Button android:id="@+id/btn_series" android:layout_width="wrap_content" android:layout_height="40dp" android:text="المسلسلات" android:backgroundTint="@color/panel_dark"/>
               </LinearLayout>
               <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal">
-                  <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_groups" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.22" android:background="#1c142e"/>
-                  <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_items" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.28" android:background="#130d21"/>
-                  <androidx.media3.ui.PlayerView android:id="@+id/exoplayer_view" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.5"/>
+                  <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_groups" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.25"/>
+                  <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_items" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.30" android:background="#130d21"/>
+                  <androidx.media3.ui.PlayerView android:id="@+id/exoplayer_view" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.45"/>
               </LinearLayout>
           </LinearLayout>
           EOF
 
-          # كود الجافا MainActivity (إصلاح التشغيل ودعم HLS + NoSleep)
+          # كود الجافا MainActivity
           cat <<EOF > app/src/main/java/com/rabie/iptv/MainActivity.java
           package com.rabie.iptv;
           import android.os.Bundle;
@@ -98,7 +108,6 @@ jobs:
               protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
                   setContentView(R.layout.activity_main);
-                  // تفعيل خاصية keepScreenOn برمجياً لضمان عدم النوم
                   getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                   
                   player = new ExoPlayer.Builder(this).build();
@@ -123,7 +132,7 @@ jobs:
                           cur.g = l.contains("group-title=\"") ? l.split("group-title=\"")[1].split("\"")[0] : "General";
                       } else if (l.startsWith("http") && cur != null) {
                           cur.u = l.trim(); String gL = cur.g.toLowerCase();
-                          Map<String, List<Ch>> target = gL.contains("movie") || gL.contains("افلام") ? movies : (gL.contains("series") || gL.contains("مسلسل") ? series : live);
+                          Map<String, List<Ch>> target = (gL.contains("movie") || gL.contains("افلام")) ? movies : ((gL.contains("series") || gL.contains("مسلسل")) ? series : live);
                           if (!target.containsKey(cur.g)) target.put(cur.g, new ArrayList<>());
                           target.get(cur.g).add(cur); cur = null;
                       }
@@ -131,7 +140,7 @@ jobs:
               }
 
               private void setMode(Map<String, List<Ch>> data, boolean isLive) {
-                  ((PlayerView)findViewById(R.id.exoplayer_view)).setUseController(!isLive); // نحي التحكم في المباشر
+                  ((PlayerView)findViewById(R.id.exoplayer_view)).setUseController(!isLive);
                   rvG.setAdapter(new GroupAdapter(new ArrayList<>(data.keySet()), data));
               }
 
@@ -145,7 +154,7 @@ jobs:
                   GroupAdapter(List<String> g, Map<String, List<Ch>> d) { groups = g; data = d; }
                   @Override public VH onCreateViewHolder(ViewGroup p, int t) {
                       Button b = new Button(p.getContext()); b.setTextColor(0xFFFFFFFF); b.setBackgroundResource(R.drawable.selector);
-                      b.setPadding(20,20,20,20); return new VH(b);
+                      return new VH(b);
                   }
                   @Override public void onBindViewHolder(VH h, int i) {
                       h.b.setText(groups.get(i));
@@ -171,16 +180,14 @@ jobs:
                   @Override public int getItemCount() { return items.size(); }
                   class VH extends RecyclerView.ViewHolder { TextView tv; VH(View v) { super(v); tv = (TextView)v; } }
               }
-              @Override protected void onDestroy() { super.onDestroy(); player.release(); }
           }
           EOF
 
-          # كود الجافا لشاشة الترحيب (SplashActivity)
+          # كود شاشة الترحيب
           cat <<EOF > app/src/main/java/com/rabie/iptv/SplashActivity.java
           package com.rabie.iptv;
           import android.content.Intent;
-          import android.os.Bundle;
-          import android.os.Handler;
+          import android.os.*;
           import androidx.appcompat.app.AppCompatActivity;
 
           public class SplashActivity extends AppCompatActivity {
@@ -188,10 +195,8 @@ jobs:
               protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
                   setContentView(R.layout.activity_splash);
-                  
-                  // الانتظار 3 ثواني قبل الانتقال للشاشة الرئيسية
                   new Handler().postDelayed(() -> {
-                      startActivity(new Intent(SplashActivity.this, MainActivity.class));
+                      startActivity(new Intent(this, MainActivity.class));
                       finish();
                   }, 3000);
               }
@@ -204,20 +209,18 @@ jobs:
           dependencies { 
               implementation 'androidx.appcompat:appcompat:1.6.1'
               implementation 'androidx.media3:media3-exoplayer:1.2.1'
-              implementation 'androidx.media3:media3-exoplayer-hls:1.2.1'
               implementation 'androidx.media3:media3-ui:1.2.1'
               implementation 'androidx.recyclerview:recyclerview:1.3.0'
               implementation 'com.android.volley:volley:1.2.1'
           }
           EOF
           
-          # تعديل المانيفست لتكون SplashActivity هي شاشة الانطلاق
-          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><uses-permission android:name="android.permission.WAKE_LOCK"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:label="Rabie IPTV Pro"><activity android:name="com.rabie.iptv.SplashActivity" android:exported="true" android:screenOrientation="landscape"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape"/></application></manifest>' > app/src/main/AndroidManifest.xml
+          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><uses-permission android:name="android.permission.WAKE_LOCK"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:label="Rabie IPTV Pro"><activity android:name="com.rabie.iptv.SplashActivity" android:exported="true" android:screenOrientation="landscape"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity><activity android:name="com.rabie.iptv.MainActivity" android:screenOrientation="landscape"/></application></manifest>' > app/src/main/AndroidManifest.xml
           
           gradle wrapper --gradle-version 8.5
           chmod +x gradlew
           ./gradlew :app:assembleDebug --no-daemon
 
-      - name: Download_Universal_App
+      - name: Upload_Final_APK
         uses: actions/upload-artifact@v4
-        with: { name: Rabie_Professional_IPTV_V6, path: app/build/outputs/apk/debug/*.apk }
+        with: { name: Rabie_IPTV_Final_Fixed, path: app/build/outputs/apk/debug/*.apk }
