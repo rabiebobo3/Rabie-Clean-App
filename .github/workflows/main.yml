@@ -1,4 +1,4 @@
-name: Rabie_Final_Fix
+name: Rabie_Ultimate_Fix
 on: [push]
 jobs:
   build:
@@ -8,53 +8,48 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Create_Everything_From_Scratch
+      - name: Build_Without_Errors
         run: |
-          # 1. مسح شامل لأي حاجة قديمة باش ما تقوليش تراكم ملفات
-          rm -rf app settings.gradle build.gradle .gradle
+          # 1. تنظيف شامل
+          rm -rf app settings.gradle build.gradle gradle.properties
           
-          # 2. ملف الإعدادات (هادا هو اللي يفتح الطريق لـ جوجل)
+          # 2. تفعيل خاصية حل تضارب المكتبات (هادا هو الصح)
+          echo "android.useAndroidX=true" > gradle.properties
+          echo "android.enableJetifier=true" >> gradle.properties
+          
+          # 3. ملف الإعدادات
           cat <<EOF > settings.gradle
           pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
           dependencyResolutionManagement {
               repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
               repositories { google(); mavenCentral() }
           }
-          rootProject.name = 'RabieApp'
           include ':app'
           EOF
 
-          # 3. مجلد الكود
+          # 4. ملف البناء (بأبسط مكتبات ممكنة)
           mkdir -p app/src/main/java/com/rabie/iptv
-          
-          # 4. ملف بناء التطبيق
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' version '8.2.2' }
           android {
               namespace 'com.rabie.iptv'
               compileSdk 34
-              defaultConfig {
-                  applicationId "com.rabie.iptv"
-                  minSdk 21
-                  targetSdk 34
-                  versionCode 1
-                  versionName "1.0"
-              }
+              defaultConfig { applicationId "com.rabie.iptv"; minSdk 21; targetSdk 34; versionCode 1; versionName "1.0" }
           }
           dependencies { implementation 'androidx.appcompat:appcompat:1.6.1' }
           EOF
 
           # 5. المانيفست والجافا
-          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><application android:label="Rabie IPTV"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
-          echo 'package com.rabie.iptv; import android.app.Activity; import android.os.Bundle; public class MainActivity extends Activity { @Override protected void onCreate(Bundle s) { super.onCreate(s); android.widget.TextView t = new android.widget.TextView(this); t.setText("Success ✅"); setContentView(t); } }' > app/src/main/java/com/rabie/iptv/MainActivity.java
+          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><application android:label="Success"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
+          echo 'package com.rabie.iptv; import android.app.Activity; import android.os.Bundle; public class MainActivity extends Activity { @Override protected void onCreate(Bundle s) { super.onCreate(s); android.widget.TextView t = new android.widget.TextView(this); t.setText("Final Success ✅"); setContentView(t); } }' > app/src/main/java/com/rabie/iptv/MainActivity.java
           
-          # 6. البناء القسري
+          # 6. تنفيذ البناء
           gradle wrapper --gradle-version 8.5
           chmod +x gradlew
           ./gradlew :app:assembleDebug --no-daemon
 
-      - name: Get_APK
+      - name: Upload_APK
         uses: actions/upload-artifact@v4
         with:
-          name: Rabie_APK
+          name: Rabie_Final_APK
           path: app/build/outputs/apk/debug/*.apk
