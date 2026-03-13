@@ -1,4 +1,4 @@
-name: Rabie_Success_Build
+name: Rabie_Final_Fix
 on: [push]
 jobs:
   build:
@@ -8,22 +8,33 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_Pure_APK
+      - name: Create_Everything_From_Scratch
         run: |
-          # صنع مجلدات المشروع
-          mkdir -p app/src/main/java/com/rabie/cleanapp
+          # 1. مسح شامل لأي حاجة قديمة باش ما تقوليش تراكم ملفات
+          rm -rf app settings.gradle build.gradle .gradle
           
-          # إعدادات Gradle
-          echo "include ':app'" > settings.gradle
+          # 2. ملف الإعدادات (هادا هو اللي يفتح الطريق لـ جوجل)
+          cat <<EOF > settings.gradle
+          pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories { google(); mavenCentral() }
+          }
+          rootProject.name = 'RabieApp'
+          include ':app'
+          EOF
+
+          # 3. مجلد الكود
+          mkdir -p app/src/main/java/com/rabie/iptv
           
-          # ملف بناء التطبيق
+          # 4. ملف بناء التطبيق
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' version '8.2.2' }
           android {
-              namespace 'com.rabie.cleanapp'
+              namespace 'com.rabie.iptv'
               compileSdk 34
               defaultConfig {
-                  applicationId "com.rabie.cleanapp"
+                  applicationId "com.rabie.iptv"
                   minSdk 21
                   targetSdk 34
                   versionCode 1
@@ -33,19 +44,17 @@ jobs:
           dependencies { implementation 'androidx.appcompat:appcompat:1.6.1' }
           EOF
 
-          # المانيفست
-          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><application android:label="Rabie Success"><activity android:name="com.rabie.cleanapp.MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
+          # 5. المانيفست والجافا
+          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><application android:label="Rabie IPTV"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
+          echo 'package com.rabie.iptv; import android.app.Activity; import android.os.Bundle; public class MainActivity extends Activity { @Override protected void onCreate(Bundle s) { super.onCreate(s); android.widget.TextView t = new android.widget.TextView(this); t.setText("Success ✅"); setContentView(t); } }' > app/src/main/java/com/rabie/iptv/MainActivity.java
           
-          # كود الجافا
-          echo 'package com.rabie.cleanapp; import android.app.Activity; import android.os.Bundle; public class MainActivity extends Activity { @Override protected void onCreate(Bundle s) { super.onCreate(s); android.widget.TextView t = new android.widget.TextView(this); t.setText("Success! ✅"); setContentView(t); } }' > app/src/main/java/com/rabie/cleanapp/MainActivity.java
-          
-          # أمر البناء
+          # 6. البناء القسري
           gradle wrapper --gradle-version 8.5
           chmod +x gradlew
           ./gradlew :app:assembleDebug --no-daemon
 
-      - name: Upload_Result
+      - name: Get_APK
         uses: actions/upload-artifact@v4
         with:
-          name: My_First_Success_APK
+          name: Rabie_APK
           path: app/build/outputs/apk/debug/*.apk
