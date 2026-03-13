@@ -1,4 +1,4 @@
-name: Rabie_TV_V17_Final_Pro
+name: Rabie_TV_V18_Ultimate
 on: [push]
 jobs:
   build:
@@ -8,7 +8,7 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_V17_No_Errors
+      - name: Build_V18_Final
         run: |
           rm -rf app settings.gradle build.gradle gradle.properties .gradle
           echo "android.useAndroidX=true" > gradle.properties
@@ -28,7 +28,7 @@ jobs:
           mkdir -p app/src/main/res/values
           mkdir -p app/src/main/res/drawable
 
-          # واجهة V17 مع شاشة ترحيب RABIE-TV وميد في الأقسام
+          # واجهة V18: المشغل بدون حواف (Resize Mode: Fill)
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -40,9 +40,8 @@ jobs:
                   <LinearLayout android:layout_width="match_parent" android:layout_height="60dp" android:background="#000" android:gravity="center_vertical" android:padding="8dp">
                       <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE-TV" android:textColor="#ff9100" android:textStyle="bold" android:textSize="26sp" android:layout_marginRight="15dp"/>
                       <View android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"/>
-                      <Button android:id="@+id/tab_live" android:layout_width="wrap_content" android:layout_height="42dp" android:text="القنوات" android:backgroundTint="#1c142e" android:focusable="true" android:nextFocusRight="@+id/tab_movie"/>
+                      <Button android:id="@+id/tab_live" android:layout_width="wrap_content" android:layout_height="42dp" android:text="القنوات" android:backgroundTint="#1c142e" android:focusable="true"/>
                       <Button android:id="@+id/tab_movie" android:layout_width="wrap_content" android:layout_height="42dp" android:text="الأفلام" android:backgroundTint="#1c142e" android:layout_marginLeft="5dp" android:focusable="true"/>
-                      <Button android:id="@+id/tab_series" android:layout_width="wrap_content" android:layout_height="42dp" android:text="المسلسلات" android:backgroundTint="#1c142e" android:layout_marginLeft="5dp" android:focusable="true"/>
                   </LinearLayout>
 
                   <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal">
@@ -65,7 +64,6 @@ jobs:
           </RelativeLayout>
           EOF
 
-          # تصميم عنصر القناة مع "الوميض" (Focus)
           cat <<EOF > app/src/main/res/drawable/focus_bg.xml
           <selector xmlns:android="http://schemas.android.com/apk/res/android">
               <item android:state_focused="true"><shape><solid android:color="#ff9100"/><corners android:radius="4dp"/></shape></item>
@@ -73,7 +71,7 @@ jobs:
           </selector>
           EOF
 
-          # تصحيح ملف build.gradle (حل مشكلة التكرار والنسخ)
+          # تصحيح الـ Gradle وإضافة مكتبات البث السريع
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' version '8.2.2' }
           android { 
@@ -83,14 +81,16 @@ jobs:
                   applicationId "com.rabie.iptv"
                   minSdk 21
                   targetSdk 34
-                  versionCode 17
-                  versionName "17.0"
+                  versionCode 18
+                  versionName "18.0"
               }
               configurations.all { exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8' }
           }
           dependencies { 
               implementation 'androidx.appcompat:appcompat:1.6.1'
               implementation 'androidx.media3:media3-exoplayer:1.2.1'
+              implementation 'androidx.media3:media3-exoplayer-hls:1.2.1'
+              implementation 'androidx.media3:media3-exoplayer-dash:1.2.1'
               implementation 'androidx.media3:media3-ui:1.2.1'
               implementation 'androidx.recyclerview:recyclerview:1.3.0'
               implementation 'com.android.volley:volley:1.2.1'
@@ -99,6 +99,7 @@ jobs:
           }
           EOF
 
+          # كود الجافا مع تصحيح الـ Imports والتحميل السريع
           cat <<EOF > app/src/main/java/com/rabie/iptv/MainActivity.java
           package com.rabie.iptv;
           import android.os.Bundle;
@@ -109,6 +110,7 @@ jobs:
           import androidx.appcompat.app.AppCompatActivity;
           import androidx.media3.common.*;
           import androidx.media3.exoplayer.ExoPlayer;
+          import androidx.media3.exoplayer.DefaultLoadControl;
           import androidx.media3.ui.PlayerView;
           import androidx.recyclerview.widget.*;
           import com.android.volley.toolbox.*;
@@ -119,7 +121,6 @@ jobs:
           public class MainActivity extends AppCompatActivity {
               private ExoPlayer player;
               private Map<String, List<Ch>> live = new LinkedHashMap<>();
-              private Ch currentCh;
               private PlayerView smallPV, fullPV;
               private RecyclerView rvG, rvI;
 
@@ -132,7 +133,11 @@ jobs:
 
                   new Handler().postDelayed(() -> findViewById(R.id.splash).setVisibility(View.GONE), 3000);
 
-                  player = new ExoPlayer.Builder(this).setLoadControl(new DefaultLoadControl.Builder().setBufferDurationsMs(500, 1000, 250, 500).build()).build();
+                  // إعداد البث السريع جداً
+                  DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
+                      .setBufferDurationsMs(500, 1500, 250, 500).build();
+
+                  player = new ExoPlayer.Builder(this).setLoadControl(loadControl).build();
                   smallPV = findViewById(R.id.small_player); fullPV = findViewById(R.id.full_player);
                   rvG = findViewById(R.id.rv_groups); rvI = findViewById(R.id.rv_items);
                   
@@ -164,7 +169,6 @@ jobs:
               }
 
               private void play(Ch c) {
-                  currentCh = c;
                   ((TextView)findViewById(R.id.txt_title)).setText(c.n);
                   player.setMediaItem(MediaItem.fromUri(c.u));
                   player.prepare(); player.play();
@@ -185,7 +189,6 @@ jobs:
                           cur = new Ch();
                           cur.n = l.split(",").length > 1 ? l.split(",")[1].trim() : "Channel";
                           cur.g = l.contains("group-title=\"") ? l.split("group-title=\"")[1].split("\"")[0] : "General";
-                          cur.l = l.contains("tvg-logo=\"") ? l.split("tvg-logo=\"")[1].split("\"")[0] : "";
                       } else if (l.startsWith("http") && cur != null) {
                           cur.u = l.trim();
                           if (!live.containsKey(cur.g)) live.put(cur.g, new ArrayList<>());
@@ -233,4 +236,4 @@ jobs:
 
       - name: Upload_APK
         uses: actions/upload-artifact@v4
-        with: { name: Rabie_V17_Pro_APK, path: app/build/outputs/apk/debug/*.apk }
+        with: { name: Rabie_V18_Final_APK, path: app/build/outputs/apk/debug/*.apk }
