@@ -1,4 +1,4 @@
-name: Rabie_Pro_Remote_FullControl
+name: Rabie_Professional_Final_Success
 on: [push]
 jobs:
   build:
@@ -8,63 +8,56 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_Remote_Friendly_App
+      - name: Build_IboStyle_Final
         run: |
+          # 1. تنظيف شامل بنفس الطريقة الناجحة
           rm -rf app settings.gradle build.gradle gradle.properties .gradle
           echo "android.useAndroidX=true" > gradle.properties
           echo "android.enableJetifier=true" >> gradle.properties
           
+          # 2. ملف الإعدادات المضمون
           cat <<EOF > settings.gradle
+          pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories { google(); mavenCentral() }
+          }
           include ':app'
           EOF
 
-          mkdir -p app/src/main/java/com/rabie/ibostyle
+          mkdir -p app/src/main/java/com/rabie/iptv
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/values
           mkdir -p app/src/main/res/drawable
 
-          # خلفية التحديد للريموت (باش تعرف وين راك حاط بالريموت)
-          cat <<EOF > app/src/main/res/drawable/selector.xml
-          <selector xmlns:android="http://schemas.android.com/apk/res/android">
-              <item android:state_focused="true" android:drawable="@color/accent_orange"/>
-              <item android:drawable="@color/panel_dark"/>
-          </selector>
-          EOF
+          # 3. ديزاين الألوان والتحديد للريموت
+          echo '<resources><color name="bg_dark">#0a0714</color><color name="accent_orange">#ff9100</color><color name="panel_dark">#1c142e</color></resources>' > app/src/main/res/values/colors.xml
+          echo '<selector xmlns:android="http://schemas.android.com/apk/res/android"><item android:state_focused="true" android:drawable="@color/accent_orange"/><item android:drawable="@color/panel_dark"/></selector>' > app/src/main/res/drawable/selector.xml
 
-          cat <<EOF > app/src/main/res/values/colors.xml
-          <resources>
-              <color name="bg_dark">#0a0714</color>
-              <color name="panel_dark">#1c142e</color>
-              <color name="accent_orange">#ff9100</color>
-          </resources>
-          EOF
-
-          # واجهة ذكية (تدعم إخفاء القائمة للتكبير)
+          # 4. الواجهة الاحترافية (Landscape + Player + List)
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent" android:layout_height="match_parent"
               android:orientation="vertical" android:background="@color/bg_dark">
-              
-              <LinearLayout android:id="@+id/top_bar" android:layout_width="match_parent" android:layout_height="60dp"
+              <LinearLayout android:id="@+id/top_bar" android:layout_width="match_parent" android:layout_height="50dp"
                   android:orientation="horizontal" android:padding="10dp" android:background="#000">
                   <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" 
-                      android:text="RABIE PRO" android:textColor="@color/accent_orange" android:textStyle="bold"/>
+                      android:text="RABIE PRO TV" android:textColor="@color/accent_orange" android:textStyle="bold"/>
+                  <View android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"/>
+                  <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="LIVE" android:textColor="#fff" android:layout_marginRight="10dp"/>
               </LinearLayout>
-
               <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal">
                   <androidx.media3.ui.PlayerView android:id="@+id/exoplayer_view" 
                       android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"/>
-                  
                   <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_channels" 
-                      android:layout_width="300dp" android:layout_height="match_parent" 
-                      android:background="#130d21" android:focusable="true"/>
+                      android:layout_width="280dp" android:layout_height="match_parent" android:background="#130d21"/>
               </LinearLayout>
           </LinearLayout>
           EOF
 
-          # كود الجافا مع دعم Double Click والريموت
-          cat <<EOF > app/src/main/java/com/rabie/ibostyle/MainActivity.java
-          package com.rabie.ibostyle;
+          # 5. كود الجافا (قراءة السيرفر + ريموت كنترول + تكبير)
+          cat <<EOF > app/src/main/java/com/rabie/iptv/MainActivity.java
+          package com.rabie.iptv;
           import android.os.Bundle;
           import android.view.*;
           import android.widget.*;
@@ -79,28 +72,20 @@ jobs:
           public class MainActivity extends AppCompatActivity {
               private ExoPlayer player;
               private RecyclerView rv;
-              private View topBar;
               private List<String> names = new ArrayList<>(), urls = new ArrayList<>();
-              private long lastClickTime = 0;
+              private long lastClick = 0;
 
               @Override
               protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
                   setContentView(R.layout.activity_main);
-                  
-                  topBar = findViewById(R.id.top_bar);
                   player = new ExoPlayer.Builder(this).build();
                   ((PlayerView)findViewById(R.id.exoplayer_view)).setPlayer(player);
-                  
                   rv = findViewById(R.id.rv_channels);
                   rv.setLayoutManager(new LinearLayoutManager(this));
-
-                  fetchData();
-              }
-
-              private void fetchData() {
-                  String url = "https://gist.githubusercontent.com/rabiebobo3/d498347610d7312b3e9be88093117620/raw/list.m3u";
-                  Volley.newRequestQueue(this).add(new StringRequest(url, res -> {
+                  
+                  String gist = "https://gist.githubusercontent.com/rabiebobo3/d498347610d7312b3e9be88093117620/raw/list.m3u";
+                  Volley.newRequestQueue(this).add(new StringRequest(gist, res -> {
                       String[] lines = res.split("\n");
                       for(int i=0; i<lines.length; i++) {
                           if(lines[i].contains("#EXTINF")) {
@@ -113,28 +98,25 @@ jobs:
               }
 
               class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.VH> {
-                  class VH extends RecyclerView.ViewHolder { 
-                      Button b; 
-                      VH(View v) { super(v); b = (Button)v; b.setFocusable(true); } 
-                  }
+                  class VH extends RecyclerView.ViewHolder { Button b; VH(View v) { super(v); b = (Button)v; b.setFocusable(true); } }
                   @Override public VH onCreateViewHolder(ViewGroup p, int t) {
                       Button b = new Button(p.getContext());
-                      b.setLayoutParams(new LayoutParams(-1, -2));
+                      b.setLayoutParams(new ViewGroup.LayoutParams(-1, -2));
                       b.setBackgroundResource(R.drawable.selector);
+                      b.setTextColor(0xFFFFFFFF);
                       return new VH(b);
                   }
                   @Override public void onBindViewHolder(VH h, int i) {
                       h.b.setText(names.get(i));
                       h.b.setOnClickListener(v -> {
-                          long now = System.currentTimeMillis();
-                          if (now - lastClickTime < 300) { // Double Click
-                              rv.setVisibility(rv.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
-                              topBar.setVisibility(rv.getVisibility());
-                          } else { // Single Click
+                          if (System.currentTimeMillis() - lastClick < 300) {
+                              findViewById(R.id.rv_channels).setVisibility(rv.getVisibility()==View.VISIBLE?View.GONE:View.VISIBLE);
+                              findViewById(R.id.top_bar).setVisibility(rv.getVisibility());
+                          } else {
                               player.setMediaItem(MediaItem.fromUri(urls.get(i)));
                               player.prepare(); player.play();
                           }
-                          lastClickTime = now;
+                          lastClick = System.currentTimeMillis();
                       });
                   }
                   @Override public int getItemCount() { return names.size(); }
@@ -142,9 +124,14 @@ jobs:
           }
           EOF
 
+          # 6. ملف البناء المتوافق (Dependencies)
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' version '8.2.2' }
-          android { namespace 'com.rabie.ibostyle'; compileSdk 34; defaultConfig { minSdk 21; targetSdk 34; } }
+          android {
+              namespace 'com.rabie.iptv'
+              compileSdk 34
+              defaultConfig { applicationId "com.rabie.iptv"; minSdk 21; targetSdk 34; versionCode 1; versionName "1.0" }
+          }
           dependencies { 
               implementation 'androidx.appcompat:appcompat:1.6.1'
               implementation 'androidx.media3:media3-exoplayer:1.2.1'
@@ -154,7 +141,7 @@ jobs:
           }
           EOF
           
-          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:theme="@style/Theme.AppCompat.NoActionBar"><activity android:name="com.rabie.ibostyle.MainActivity" android:exported="true" android:screenOrientation="landscape"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/><category android:name="android.intent.category.LEANBACK_LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
+          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:label="Rabie IPTV Pro"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
           
           gradle wrapper --gradle-version 8.5
           chmod +x gradlew
@@ -163,5 +150,5 @@ jobs:
       - name: Upload_APK
         uses: actions/upload-artifact@v4
         with:
-          name: Rabie_TV_Remote_Edition
+          name: Rabie_Pro_TV_Success
           path: app/build/outputs/apk/debug/*.apk
