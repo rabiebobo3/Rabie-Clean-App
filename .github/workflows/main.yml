@@ -8,7 +8,7 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_V15_Ultimate
+      - name: Build_V15_Ultimate_Pro
         run: |
           rm -rf app settings.gradle build.gradle gradle.properties .gradle
           echo "android.useAndroidX=true" > gradle.properties
@@ -26,7 +26,7 @@ jobs:
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/drawable
 
-          # واجهة مع أزرار التحكم في المشغل الكبير
+          # واجهة المشغل مع توزيع ذكي للعناصر
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -62,14 +62,22 @@ jobs:
               </LinearLayout>
 
               <FrameLayout android:id="@+id/full_container" android:layout_width="match_parent" android:layout_height="match_parent" android:visibility="gone">
-                  <androidx.media3.ui.PlayerView android:id="@+id/full_player" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#000" app:resize_mode="zoom" app:use_controller="false" />
+                  <androidx.media3.ui.PlayerView android:id="@+id/full_player" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#000" app:resize_mode="fill" app:use_controller="false" />
                   <ProgressBar android:id="@+id/loading_f" android:layout_width="70dp" android:layout_height="70dp" android:layout_gravity="center" android:visibility="gone" android:indeterminateTint="#ff9100"/>
                   
-                  <LinearLayout android:id="@+id/controls_overlay" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_gravity="bottom" android:background="#80000000" android:padding="20dp" android:gravity="center" android:visibility="gone">
-                      <Button android:id="@+id/btn_rew" android:layout_width="60dp" android:layout_height="60dp" android:text="⏪" android:textSize="20sp" android:backgroundTint="#1c142e" android:focusable="true" android:background="@drawable/focus_highlight"/>
-                      <Button android:id="@+id/btn_play_pause" android:layout_width="60dp" android:layout_height="60dp" android:text="⏸" android:textSize="20sp" android:layout_marginHorizontal="20dp" android:backgroundTint="#ff9100" android:focusable="true" android:background="@drawable/focus_highlight"/>
-                      <Button android:id="@+id/btn_ffwd" android:layout_width="60dp" android:layout_height="60dp" android:text="⏩" android:textSize="20sp" android:backgroundTint="#1c142e" android:focusable="true" android:background="@drawable/focus_highlight"/>
-                  </LinearLayout>
+                  <RelativeLayout android:id="@+id/overlay_full" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#60000000" android:visibility="gone">
+                      <TextView android:id="@+id/full_info_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentTop="true" android:layout_centerHorizontal="true" android:layout_marginTop="20dp" android:textColor="#FFF" android:textSize="24sp" android:textStyle="bold"/>
+                      
+                      <LinearLayout android:id="@+id/movie_controls" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:layout_alignParentBottom="true" android:padding="20dp">
+                          <SeekBar android:id="@+id/full_seekbar" android:layout_width="match_parent" android:layout_height="wrap_content" android:progressTint="#ff9100" android:thumbTint="#ff9100"/>
+                          <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="horizontal" android:layout_marginTop="10dp">
+                              <TextView android:id="@+id/txt_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="00:00 / 00:00" android:textColor="#FFF" android:layout_marginRight="20dp"/>
+                              <Button android:id="@+id/btn_rew" android:layout_width="50dp" android:layout_height="50dp" android:text="⏪" android:backgroundTint="#1c142e" android:focusable="true" android:background="@drawable/focus_highlight"/>
+                              <Button android:id="@+id/btn_play_pause" android:layout_width="50dp" android:layout_height="50dp" android:text="⏸" android:layout_marginHorizontal="15dp" android:backgroundTint="#ff9100" android:focusable="true" android:background="@drawable/focus_highlight"/>
+                              <Button android:id="@+id/btn_ffwd" android:layout_width="50dp" android:layout_height="50dp" android:text="⏩" android:backgroundTint="#1c142e" android:focusable="true" android:background="@drawable/focus_highlight"/>
+                          </LinearLayout>
+                      </LinearLayout>
+                  </RelativeLayout>
               </FrameLayout>
 
               <RelativeLayout android:id="@+id/splash_screen" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#0a0714" android:elevation="20dp">
@@ -140,11 +148,13 @@ jobs:
               private List<Ch> favList = new ArrayList<>();
               private Ch currentCh;
               private RecyclerView rvG, rvI;
-              private TextView tTitle, tGroup;
+              private TextView tTitle, tGroup, tFullTitle, tTime;
               private PlayerView smallPV, fullPV;
-              private View mainUI, fullCont, overlay;
+              private View mainUI, fullCont, overlay, movieControls;
+              private SeekBar seekBar;
               private ProgressBar ps, pf;
-              private Handler hideHandler = new Handler();
+              private String currentMode = "live";
+              private Handler handler = new Handler();
 
               static class Ch { String n, u, g, l; }
 
@@ -158,8 +168,10 @@ jobs:
                   smallPV = findViewById(R.id.small_player); fullPV = findViewById(R.id.full_player);
                   mainUI = findViewById(R.id.main_ui_container); fullCont = findViewById(R.id.full_container);
                   ps = findViewById(R.id.loading_s); pf = findViewById(R.id.loading_f);
-                  overlay = findViewById(R.id.controls_overlay);
-
+                  overlay = findViewById(R.id.overlay_full); movieControls = findViewById(R.id.movie_controls);
+                  tFullTitle = findViewById(R.id.full_info_title); tTime = findViewById(R.id.txt_time);
+                  seekBar = findViewById(R.id.full_seekbar);
+                  
                   smallPV.setPlayer(player);
 
                   player.addListener(new Player.Listener() {
@@ -181,43 +193,64 @@ jobs:
                       }
                   });
 
-                  // أزرار التحكم
-                  findViewById(R.id.btn_rew).setOnClickListener(v -> { player.seekTo(player.getCurrentPosition() - 10000); resetHideTimer(); });
-                  findViewById(R.id.btn_ffwd).setOnClickListener(v -> { player.seekTo(player.getCurrentPosition() + 10000); resetHideTimer(); });
+                  findViewById(R.id.btn_rew).setOnClickListener(v -> { player.seekTo(player.getCurrentPosition() - 10000); resetTimer(); });
+                  findViewById(R.id.btn_ffwd).setOnClickListener(v -> { player.seekTo(player.getCurrentPosition() + 10000); resetTimer(); });
                   findViewById(R.id.btn_play_pause).setOnClickListener(v -> {
                       if (player.isPlaying()) { player.pause(); ((Button)v).setText("▶"); }
                       else { player.play(); ((Button)v).setText("⏸"); }
-                      resetHideTimer();
+                      resetTimer();
                   });
 
-                  fullCont.setOnClickListener(v -> showControls());
+                  fullCont.setOnClickListener(v -> showOverlay());
                   
                   findViewById(R.id.tab_live).setOnClickListener(v -> setMode("live"));
                   findViewById(R.id.tab_movie).setOnClickListener(v -> setMode("movie"));
                   findViewById(R.id.tab_series).setOnClickListener(v -> setMode("series"));
                   findViewById(R.id.tab_fav).setOnClickListener(v -> setMode("fav"));
                   findViewById(R.id.btn_toggle_fav).setOnClickListener(v -> toggleFav());
+                  
+                  updateProgress();
               }
 
-              private void showControls() {
+              private void showOverlay() {
                   overlay.setVisibility(View.VISIBLE);
-                  findViewById(R.id.btn_play_pause).requestFocus();
-                  resetHideTimer();
+                  tFullTitle.setText(currentCh != null ? currentCh.n + " | " + (currentMode.equals("live") ? "LIVE HD" : "VOD") : "");
+                  movieControls.setVisibility(currentMode.equals("live") ? View.GONE : View.VISIBLE);
+                  if (!currentMode.equals("live")) findViewById(R.id.btn_play_pause).requestFocus();
+                  resetTimer();
               }
 
-              private void resetHideTimer() {
-                  hideHandler.removeCallbacksAndMessages(null);
-                  hideHandler.postDelayed(() -> overlay.setVisibility(View.GONE), 3000);
+              private void resetTimer() {
+                  handler.removeCallbacks(hideRunnable);
+                  handler.postDelayed(hideRunnable, 3000);
+              }
+
+              private Runnable hideRunnable = () -> overlay.setVisibility(View.GONE);
+
+              private void updateProgress() {
+                  if (player != null && !currentMode.equals("live")) {
+                      long pos = player.getCurrentPosition();
+                      long dur = player.getDuration();
+                      if (dur > 0) {
+                          seekBar.setMax((int) dur); seekBar.setProgress((int) pos);
+                          tTime.setText(formatTime(pos) + " / " + formatTime(dur));
+                      }
+                  }
+                  handler.postDelayed(this::updateProgress, 1000);
+              }
+
+              private String formatTime(long ms) {
+                  long s = (ms / 1000) % 60; long m = (ms / (1000 * 60)) % 60; long h = (ms / (1000 * 60 * 60));
+                  return h > 0 ? String.format("%02d:%02d:%02d", h, m, s) : String.format("%02d:%02d", m, s);
               }
 
               private void toggleFull(boolean full) {
                   if (full) {
                       mainUI.setVisibility(View.GONE); fullCont.setVisibility(View.VISIBLE);
                       PlayerView.switchTargetView(player, smallPV, fullPV);
-                      showControls();
+                      showOverlay();
                   } else {
-                      overlay.setVisibility(View.GONE);
-                      fullCont.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE);
+                      overlay.setVisibility(View.GONE); fullCont.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE);
                       PlayerView.switchTargetView(player, fullPV, smallPV);
                   }
               }
@@ -242,6 +275,7 @@ jobs:
               }
 
               private void setMode(String m) {
+                  currentMode = m;
                   if (m.equals("fav")) {
                       rvG.setAdapter(new GroupAdapter(Arrays.asList("⭐ المفضلة"), null));
                       rvI.setAdapter(new ItemAdapter(favList));
