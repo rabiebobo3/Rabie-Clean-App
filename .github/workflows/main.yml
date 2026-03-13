@@ -1,4 +1,4 @@
-name: Rabie_Pro_V15_Advanced_Fixed
+name: Rabie_Pro_V15_HTML_Mirror
 on: [push]
 jobs:
   build:
@@ -8,7 +8,7 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_Ultimate_V15
+      - name: Build_V15_Mirror_System
         run: |
           rm -rf app settings.gradle build.gradle gradle.properties .gradle
           echo "android.useAndroidX=true" > gradle.properties
@@ -26,42 +26,59 @@ jobs:
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/values
 
-          # واجهة V15 المعدلة
+          # واجهة V15 مع دعم الشعار والسيستام الجديد
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent" android:layout_height="match_parent" 
               android:background="#0a0714" android:keepScreenOn="true">
               
-              <LinearLayout android:id="@+id/ui_layer" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
-                  <LinearLayout android:layout_width="match_parent" android:layout_height="50dp" android:background="#000" android:gravity="center_vertical" android:padding="5dp">
-                      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE-TV PRO" android:textColor="#ff9100" android:textStyle="bold"/>
+              <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
+                  <LinearLayout android:layout_width="match_parent" android:layout_height="55dp" android:background="#000" android:gravity="center_vertical" android:padding="5dp">
+                      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE-TV PRO" android:textColor="#ff9100" android:textStyle="bold" android:textSize="18sp" android:layout_marginRight="10dp"/>
                       <View android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"/>
-                      <Button android:id="@+id/btn_live" android:layout_width="wrap_content" android:layout_height="35dp" android:text="قنوات" android:textSize="10sp"/>
-                      <Button android:id="@+id/btn_movies" android:layout_width="wrap_content" android:layout_height="35dp" android:text="أفلام" android:textSize="10sp" android:layout_marginLeft="5dp"/>
-                      <Button android:id="@+id/btn_series" android:layout_width="wrap_content" android:layout_height="35dp" android:text="مسلسلات" android:textSize="10sp" android:layout_marginLeft="5dp"/>
+                      <Button android:id="@+id/tab_live" android:layout_width="wrap_content" android:layout_height="35dp" android:text="القنوات" android:textSize="9sp" android:backgroundTint="#1c142e"/>
+                      <Button android:id="@+id/tab_movie" android:layout_width="wrap_content" android:layout_height="35dp" android:text="الأفلام" android:textSize="9sp" android:backgroundTint="#1c142e" android:layout_marginLeft="4dp"/>
+                      <Button android:id="@+id/tab_series" android:layout_width="wrap_content" android:layout_height="35dp" android:text="المسلسلات" android:textSize="9sp" android:backgroundTint="#1c142e" android:layout_marginLeft="4dp"/>
+                      <Button android:id="@+id/tab_fav" android:layout_width="wrap_content" android:layout_height="35dp" android:text="⭐ المفضلة" android:textSize="9sp" android:backgroundTint="#1c142e" android:layout_marginLeft="4dp"/>
+                      <Button android:id="@+id/btn_toggle_fav" android:layout_width="wrap_content" android:layout_height="35dp" android:text="⭐ +/-" android:textSize="8sp" android:backgroundTint="#ff9100" android:layout_marginLeft="10dp"/>
+                      <Button android:id="@+id/btn_refresh" android:layout_width="wrap_content" android:layout_height="35dp" android:text="تحديث" android:textSize="8sp" android:layout_marginLeft="5dp"/>
                   </LinearLayout>
 
                   <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal">
-                      <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_main" android:layout_width="140dp" android:layout_height="match_parent" android:background="#151515"/>
-                      <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_sub" android:layout_width="120dp" android:layout_height="match_parent" android:background="#1a1a1a" android:visibility="gone"/>
-                      <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_items" android:layout_width="180dp" android:layout_height="match_parent" android:background="#202020"/>
-                      
-                      <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
-                          <androidx.media3.ui.PlayerView android:id="@+id/exoplayer_view" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:background="#000"/>
-                          <TextView android:id="@+id/tv_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="10dp" android:background="#1c142e" android:textColor="#ff9100" android:gravity="center"/>
+                      <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_groups" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.22" android:background="#1c142e"/>
+                      <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_items" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.28" android:background="#130d21"/>
+                      <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.5" android:orientation="vertical" android:background="#000">
+                          <androidx.media3.ui.PlayerView android:id="@+id/exoplayer_view" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.5"/>
+                          <View android:layout_width="match_parent" android:layout_height="2dp" android:background="#1c142e"/>
+                          <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:padding="20dp" android:background="#1c142e" android:orientation="vertical">
+                              <TextView android:id="@+id/txt_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="اختر محتوى" android:textColor="#ff9100" android:textSize="22sp" android:textStyle="bold"/>
+                              <TextView android:id="@+id/txt_group" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="يرجى تحديد قناة أو فيلم لبدء المشاهدة." android:textColor="#aaa" android:textSize="14sp" android:layout_marginTop="10dp"/>
+                          </LinearLayout>
                       </LinearLayout>
                   </LinearLayout>
               </LinearLayout>
-
-              <androidx.media3.ui.PlayerView android:id="@+id/full_player" 
-                  android:layout_width="match_parent" android:layout_height="match_parent" 
-                  android:visibility="gone" android:background="#000" />
+              <androidx.media3.ui.PlayerView android:id="@+id/full_player" android:layout_width="match_parent" android:layout_height="match_parent" android:visibility="gone" android:background="#000"/>
           </RelativeLayout>
           EOF
 
+          # تصميم عنصر القناة مع الشعار
+          cat <<EOF > app/src/main/res/layout/item_channel.xml
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent" android:layout_height="wrap_content"
+              android:orientation="horizontal" android:gravity="center_vertical" 
+              android:padding="10dp" android:background="?attr/selectableItemBackground">
+              <ImageView android:id="@+id/img_logo" android:layout_width="35dp" android:layout_height="35dp" 
+                  android:scaleType="centerInside" android:layout_marginRight="12dp" android:background="#000"/>
+              <TextView android:id="@+id/txt_name" android:layout_width="wrap_content" android:layout_height="wrap_content" 
+                  android:textColor="#FFFFFF" android:textSize="14sp"/>
+          </LinearLayout>
+          EOF
+
+          # كود الجافا (Copy-Paste System from HTML)
           cat <<EOF > app/src/main/java/com/rabie/iptv/MainActivity.java
           package com.rabie.iptv;
-          import android.os.*;
+          import android.content.SharedPreferences;
+          import android.os.Bundle;
           import android.view.*;
           import android.widget.*;
           import androidx.appcompat.app.AppCompatActivity;
@@ -70,125 +87,151 @@ jobs:
           import androidx.media3.ui.PlayerView;
           import androidx.recyclerview.widget.*;
           import com.android.volley.toolbox.*;
+          import com.bumptech.glide.Glide;
+          import com.google.gson.Gson;
+          import com.google.gson.reflect.TypeToken;
           import java.util.*;
+          import java.util.regex.*;
 
           public class MainActivity extends AppCompatActivity {
               private ExoPlayer player;
-              private Map<String, List<Ch>> live = new LinkedHashMap<>(), movies = new LinkedHashMap<>();
-              private Map<String, Map<String, List<Ch>>> series = new LinkedHashMap<>();
-              private RecyclerView rvMain, rvSub, rvItems;
-              private PlayerView exoView, fullView;
-              class Ch { String n, u, g; }
+              private Map<String, List<Ch>> live = new LinkedHashMap<>(), movie = new LinkedHashMap<>(), series = new LinkedHashMap<>();
+              private List<Ch> favList = new ArrayList<>();
+              private String currentMode = "live";
+              private Ch currentCh;
+              private RecyclerView rvG, rvI;
+              private TextView tTitle, tGroup;
+              private SharedPreferences pref;
+
+              static class Ch { String n, u, g, l; }
 
               @Override
               protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
                   setContentView(R.layout.activity_main);
-                  
+                  pref = getSharedPreferences("rabie_iptv", MODE_PRIVATE);
+                  loadFavs();
+
                   player = new ExoPlayer.Builder(this).build();
-                  exoView = findViewById(R.id.exoplayer_view);
-                  fullView = findViewById(R.id.full_player);
-                  exoView.setPlayer(player);
-                  
-                  rvMain = findViewById(R.id.rv_main); rvSub = findViewById(R.id.rv_sub); rvItems = findViewById(R.id.rv_items);
-                  rvMain.setLayoutManager(new LinearLayoutManager(this));
-                  rvSub.setLayoutManager(new LinearLayoutManager(this));
-                  rvItems.setLayoutManager(new LinearLayoutManager(this));
+                  ((PlayerView)findViewById(R.id.exoplayer_view)).setPlayer(player);
+                  rvG = findViewById(R.id.rv_groups); rvI = findViewById(R.id.rv_items);
+                  tTitle = findViewById(R.id.txt_title); tGroup = findViewById(R.id.txt_group);
+                  rvG.setLayoutManager(new LinearLayoutManager(this));
+                  rvI.setLayoutManager(new LinearLayoutManager(this));
 
                   loadData();
 
-                  findViewById(R.id.btn_live).setOnClickListener(v -> showLive());
-                  findViewById(R.id.btn_movies).setOnClickListener(v -> showMovies());
-                  findViewById(R.id.btn_series).setOnClickListener(v -> showSeries());
+                  findViewById(R.id.tab_live).setOnClickListener(v -> setMode("live"));
+                  findViewById(R.id.tab_movie).setOnClickListener(v -> setMode("movie"));
+                  findViewById(R.id.tab_series).setOnClickListener(v -> setMode("series"));
+                  findViewById(R.id.tab_fav).setOnClickListener(v -> setMode("fav"));
+                  findViewById(R.id.btn_refresh).setOnClickListener(v -> loadData());
+                  findViewById(R.id.btn_toggle_fav).setOnClickListener(v -> toggleFav());
                   
-                  // ملء الشاشة عند الضغط مرتين أو لمس المشغل
-                  exoView.setOnClickListener(v -> toggleFull(true));
-                  fullView.setOnClickListener(v -> toggleFull(false));
+                  findViewById(R.id.exoplayer_view).setOnClickListener(v -> toggleFull(true));
+                  findViewById(R.id.full_player).setOnClickListener(v -> toggleFull(false));
+              }
+
+              private void loadData() {
+                  String url = "https://gist.githubusercontent.com/rabiebobo3/d498347610d7312b3e9be88093117620/raw/list.m3u";
+                  Volley.newRequestQueue(this).add(new StringRequest(url, res -> {
+                      parse(res);
+                      setMode("live");
+                  }, null));
               }
 
               private void parse(String text) {
-                  live.clear(); movies.clear(); series.clear();
+                  live.clear(); movie.clear(); series.clear();
                   String[] lines = text.split("\n"); Ch cur = null;
+                  Pattern gP = Pattern.compile("group-title=\"(.*?)\"");
+                  Pattern lP = Pattern.compile("tvg-logo=\"(.*?)\"");
+
                   for (String l : lines) {
                       if (l.contains("#EXTINF:")) {
                           cur = new Ch();
-                          cur.n = l.split(",").length > 1 ? l.split(",")[1].trim() : "Channel";
-                          cur.g = l.contains("group-title=\"") ? l.split("group-title=\"")[1].split("\"")[0] : "General";
-                      } else if (l.trim().startsWith("http") && cur != null) {
+                          cur.n = l.split(",").length > 1 ? l.split(",")[1].trim() : "Unknown";
+                          Matcher gm = gP.matcher(l); cur.g = gm.find() ? gm.group(1) : "أخرى";
+                          Matcher lm = lP.matcher(l); cur.l = lm.find() ? lm.group(1) : "";
+                      } else if (l.startsWith("http") && cur != null) {
                           cur.u = l.trim();
-                          String g = cur.g.toLowerCase();
-                          // فرز دقيق للأفلام
-                          if (g.contains("movie") || g.contains("أفلام") || cur.u.endsWith(".mp4") || cur.u.endsWith(".mkv")) {
-                              if (!movies.containsKey(cur.g)) movies.put(cur.g, new ArrayList<>());
-                              movies.get(cur.g).add(cur);
-                          } 
-                          // فرز المسلسلات (موسم وحلقة)
-                          else if (g.contains("series") || g.contains("مسلسلات")) {
-                              String seriesName = cur.n.split(" S")[0];
-                              if (!series.containsKey(seriesName)) series.put(seriesName, new LinkedHashMap<>());
-                              String season = cur.n.contains(" S") ? "Season " + cur.n.split(" S")[1].substring(0,2) : "Season 01";
-                              if (!series.get(seriesName).containsKey(season)) series.get(seriesName).put(season, new ArrayList<>());
-                              series.get(seriesName).get(season).add(cur);
-                          } else {
-                              if (!live.containsKey(cur.g)) live.put(cur.g, new ArrayList<>());
-                              live.get(cur.g).add(cur);
-                          }
+                          String gL = cur.g.toLowerCase();
+                          Map<String, List<Ch>> target = (gL.contains("series") || gL.contains("مسلسل")) ? series : 
+                                                        (gL.contains("movie") || gL.contains("film") || gL.contains("افلام")) ? movie : live;
+                          if (!target.containsKey(cur.g)) target.put(cur.g, new ArrayList<>());
+                          target.get(cur.g).add(cur);
                           cur = null;
                       }
                   }
               }
 
-              private void showLive() { rvSub.setVisibility(View.GONE); rvMain.setAdapter(new GroupAdapter(new ArrayList<>(live.keySet()), (p, n) -> rvItems.setAdapter(new ItemAdapter(live.get(n))))); }
-              private void showMovies() { rvSub.setVisibility(View.GONE); rvMain.setAdapter(new GroupAdapter(new ArrayList<>(movies.keySet()), (p, n) -> rvItems.setAdapter(new ItemAdapter(movies.get(n))))); }
-              private void showSeries() {
-                  rvSub.setVisibility(View.VISIBLE);
-                  rvMain.setAdapter(new GroupAdapter(new ArrayList<>(series.keySet()), (p, n) -> {
-                      rvSub.setAdapter(new GroupAdapter(new ArrayList<>(series.get(n).keySet()), (p2, s) -> rvItems.setAdapter(new ItemAdapter(series.get(n).get(s)))));
-                  }));
-              }
-
-              private void toggleFull(boolean full) {
-                  if (full) {
-                      fullView.setPlayer(player); fullView.setVisibility(View.VISIBLE);
-                      findViewById(R.id.ui_layer).setVisibility(View.GONE);
+              private void setMode(String m) {
+                  currentMode = m;
+                  if (m.equals("fav")) {
+                      rvG.setAdapter(new GroupAdapter(Arrays.asList("المفضلة ⭐"), null));
+                      rvI.setAdapter(new ItemAdapter(favList));
                   } else {
-                      exoView.setPlayer(player); fullView.setVisibility(View.GONE);
-                      findViewById(R.id.ui_layer).setVisibility(View.VISIBLE);
+                      Map<String, List<Ch>> data = m.equals("movie") ? movie : (m.equals("series") ? series : live);
+                      rvG.setAdapter(new GroupAdapter(new ArrayList<>(data.keySet()), data));
                   }
               }
 
-              // منع العمل في الخلفية عند الخروج
-              @Override protected void onStop() { super.onStop(); if (player != null) player.pause(); }
-              @Override protected void onDestroy() { super.onDestroy(); if (player != null) { player.stop(); player.release(); } }
-
-              private void loadData() {
-                  String url = "https://gist.githubusercontent.com/rabiebobo3/d498347610d7312b3e9be88093117620/raw/list.m3u";
-                  Volley.newRequestQueue(this).add(new StringRequest(url, res -> { parse(res); showLive(); }, null));
+              private void toggleFav() {
+                  if (currentCh == null) return;
+                  boolean removed = false;
+                  for (int i = 0; i < favList.size(); i++) {
+                      if (favList.get(i).u.equals(currentCh.u)) { favList.remove(i); removed = true; break; }
+                  }
+                  if (!removed) favList.add(currentCh);
+                  saveFavs();
+                  Toast.makeText(this, removed ? "تم الحذف من المفضلة" : "تمت الإضافة للمفضلة", Toast.LENGTH_SHORT).show();
+                  if (currentMode.equals("fav")) setMode("fav");
               }
 
+              private void saveFavs() { pref.edit().putString("favs", new Gson().toJson(favList)).apply(); }
+              private void loadFavs() {
+                  String j = pref.getString("favs", "[]");
+                  favList = new Gson().fromJson(j, new TypeToken<List<Ch>>(){}.getType());
+              }
+
+              private void toggleFull(boolean f) {
+                  PlayerView full = findViewById(R.id.full_player);
+                  if (f) { full.setPlayer(player); full.setVisibility(View.VISIBLE); }
+                  else { full.setVisibility(View.GONE); }
+              }
+
+              @Override protected void onStop() { super.onStop(); if(player != null) player.pause(); }
+
               class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.VH> {
-                  List<String> d; OnItemClick c; GroupAdapter(List<String> d, OnItemClick c) { this.d = d; this.c = c; }
-                  public VH onCreateViewHolder(ViewGroup p, int t) { Button b = new Button(p.getContext()); b.setTextColor(-1); b.setBackgroundColor(0); b.setTextSize(9); return new VH(b); }
-                  public void onBindViewHolder(VH h, int i) { h.b.setText(d.get(i)); h.b.setOnClickListener(v -> c.onClick(i, d.get(i))); }
+                  List<String> d; Map<String, List<Ch>> data;
+                  GroupAdapter(List<String> g, Map<String, List<Ch>> m) { d = g; data = m; }
+                  public VH onCreateViewHolder(ViewGroup p, int t) {
+                      Button b = new Button(p.getContext()); b.setTextColor(-1); b.setBackgroundColor(0); b.setAllCaps(false);
+                      b.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL); return new VH(b);
+                  }
+                  public void onBindViewHolder(VH h, int i) {
+                      h.b.setText(d.get(i));
+                      h.b.setOnClickListener(v -> { if(data != null) rvI.setAdapter(new ItemAdapter(data.get(d.get(i)))); });
+                  }
                   public int getItemCount() { return d.size(); }
                   class VH extends RecyclerView.ViewHolder { Button b; VH(View v) { super(v); b = (Button)v; } }
               }
 
               class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.VH> {
                   List<Ch> items; ItemAdapter(List<Ch> i) { items = i; }
-                  public VH onCreateViewHolder(ViewGroup p, int t) { TextView tv = new TextView(p.getContext()); tv.setPadding(20,30,20,30); tv.setTextColor(-1); return new VH(tv); }
+                  public VH onCreateViewHolder(ViewGroup p, int t) {
+                      return new VH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_channel, p, false));
+                  }
                   public void onBindViewHolder(VH h, int i) {
-                      h.tv.setText(items.get(i).n);
-                      h.tv.setOnClickListener(v -> {
-                          ((TextView)findViewById(R.id.tv_title)).setText(items.get(i).n);
-                          player.setMediaItem(MediaItem.fromUri(items.get(i).u));
-                          player.prepare(); player.play();
+                      Ch c = items.get(i); h.n.setText(c.n);
+                      Glide.with(h.itemView).load(c.l).placeholder(android.R.drawable.ic_menu_report_image).into(h.img);
+                      h.itemView.setOnClickListener(v -> {
+                          currentCh = c; tTitle.setText(c.n); tGroup.setText("القسم: " + c.g);
+                          player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play();
                       });
                   }
-                  public int getItemCount() { return items.size(); }
-                  class VH extends RecyclerView.ViewHolder { TextView tv; VH(View v) { super(v); tv = (TextView)v; } }
+                  public int getItemCount() { return items != null ? items.size() : 0; }
+                  class VH extends RecyclerView.ViewHolder { TextView n; ImageView img; VH(View v) { super(v); n = v.findViewById(R.id.txt_name); img = v.findViewById(R.id.img_logo); } }
               }
-              interface OnItemClick { void onClick(int p, String n); }
           }
           EOF
 
@@ -201,6 +244,8 @@ jobs:
               implementation 'androidx.media3:media3-ui:1.2.1'
               implementation 'androidx.recyclerview:recyclerview:1.3.0'
               implementation 'com.android.volley:volley:1.2.1'
+              implementation 'com.google.code.gson:gson:2.10.1'
+              implementation 'com.github.bumptech.glide:glide:4.16.0'
           }
           EOF
           
@@ -212,4 +257,4 @@ jobs:
 
       - name: Upload_APK
         uses: actions/upload-artifact@v4
-        with: { name: Rabie_V15_Advanced_Final, path: app/build/outputs/apk/debug/*.apk }
+        with: { name: Rabie_V15_HTML_Mirror_Final, path: app/build/outputs/apk/debug/*.apk }
