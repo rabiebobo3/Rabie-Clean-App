@@ -1,4 +1,4 @@
-name: Rabie_Ibo_Pro_Real_UI
+name: Rabie_Ibo_Real_Style_V41
 on: [push]
 jobs:
   build:
@@ -8,7 +8,7 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_Ibo_Real_UI
+      - name: Build_Ibo_Pro_Edition
         run: |
           rm -rf app settings.gradle build.gradle gradle.properties .gradle
           echo "android.useAndroidX=true" > gradle.properties
@@ -26,160 +26,150 @@ jobs:
           mkdir -p app/src/main/java/com/rabie/iptv
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/values
-          mkdir -p app/src/main/res/drawable
 
-          # ألوان إيبو بلاير الأصلية
+          # ألوان إيبو بلاير الأصلية من صورك
           cat <<EOF > app/src/main/res/values/colors.xml
           <resources>
-              <color name="main_bg">#0F0C29</color>
-              <color name="card_bg">#1F1B44</color>
-              <color name="accent_gold">#F2994A</color>
+              <color name="ibo_bg">#0A0A1A</color>
+              <color name="ibo_card">#16162E</color>
+              <color name="ibo_accent">#F2994A</color>
               <color name="white">#FFFFFF</color>
           </resources>
           EOF
 
-          # واجهة الدخول (Dashboard) - تشبه إيبو بلاير
+          # واجهة الـ Dashboard (كما الصورة 1000048568)
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
-              android:layout_width="match_parent" android:layout_height="match_parent" 
-              android:background="#0F0C29">
+              android:layout_width="match_parent" android:layout_height="match_parent" android:background="#0A0A1A">
               
-              <LinearLayout android:id="@+id/dash" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center">
-                  <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="IBO PLAYER" android:textColor="#F2994A" android:textSize="32sp" android:textStyle="bold" android:layout_marginBottom="40dp"/>
-                  
-                  <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal">
-                      <androidx.cardview.widget.CardView android:id="@+id/btn_live" android:layout_width="160dp" android:layout_height="160dp" android:layout_margin="10dp" app:cardBackgroundColor="#1F1B44" app:cardCornerRadius="20dp" app:cardElevation="10dp">
-                          <LinearLayout android:gravity="center" android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent">
-                              <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="LIVE TV" android:textColor="#FFF" android:textStyle="bold"/>
-                          </LinearLayout>
+              <LinearLayout android:id="@+id/dash" android:layout_width="match_parent" android:layout_height="match_parent" 
+                  android:orientation="vertical" android:gravity="center" android:padding="20dp">
+                  <ImageView android:layout_width="100dp" android:layout_height="100dp" android:src="@android:drawable/ic_menu_slideshow" android:layout_marginBottom="20dp"/>
+                  <GridLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:columnCount="3" android:rowCount="1">
+                      <androidx.cardview.widget.CardView android:id="@+id/btn_live" android:layout_width="150dp" android:layout_height="150dp" android:layout_margin="10dp" app:cardBackgroundColor="#16162E" app:cardCornerRadius="20dp">
+                          <TextView android:layout_width="match_parent" android:layout_height="match_parent" android:text="بث مباشر" android:textColor="#FFF" android:gravity="center" android:textStyle="bold"/>
                       </androidx.cardview.widget.CardView>
-                      <androidx.cardview.widget.CardView android:id="@+id/btn_vod" android:layout_width="160dp" android:layout_height="160dp" android:layout_margin="10dp" app:cardBackgroundColor="#1F1B44" app:cardCornerRadius="20dp" app:cardElevation="10dp">
-                          <LinearLayout android:gravity="center" android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent">
-                              <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="MOVIES" android:textColor="#FFF" android:textStyle="bold"/>
-                          </LinearLayout>
+                      <androidx.cardview.widget.CardView android:id="@+id/btn_vod" android:layout_width="150dp" android:layout_height="150dp" android:layout_margin="10dp" app:cardBackgroundColor="#16162E" app:cardCornerRadius="20dp">
+                          <TextView android:layout_width="match_parent" android:layout_height="match_parent" android:text="أفلام" android:textColor="#FFF" android:gravity="center" android:textStyle="bold"/>
                       </androidx.cardview.widget.CardView>
-                      <androidx.cardview.widget.CardView android:id="@+id/btn_series" android:layout_width="160dp" android:layout_height="160dp" android:layout_margin="10dp" app:cardBackgroundColor="#1F1B44" app:cardCornerRadius="20dp" app:cardElevation="10dp">
-                          <LinearLayout android:gravity="center" android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent">
-                              <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="SERIES" android:textColor="#FFF" android:textStyle="bold"/>
-                          </LinearLayout>
+                      <androidx.cardview.widget.CardView android:id="@+id/btn_ser" android:layout_width="150dp" android:layout_height="150dp" android:layout_margin="10dp" app:cardBackgroundColor="#16162E" app:cardCornerRadius="20dp">
+                          <TextView android:layout_width="match_parent" android:layout_height="match_parent" android:text="مسلسلات" android:textColor="#FFF" android:gravity="center" android:textStyle="bold"/>
                       </androidx.cardview.widget.CardView>
+                  </GridLayout>
+              </LinearLayout>
+
+              <LinearLayout android:id="@+id/ibo_layout" android:layout_width="match_parent" android:layout_height="match_parent" 
+                  android:orientation="horizontal" android:visibility="gone">
+                  <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_g" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.2" android:background="#16162E"/>
+                  <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_i" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.3" android:background="#0F0F1F"/>
+                  <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.5" android:orientation="vertical">
+                      <androidx.media3.ui.PlayerView android:id="@+id/pv" android:layout_width="match_parent" android:layout_height="match_parent" app:use_controller="true"/>
                   </LinearLayout>
               </LinearLayout>
-
-              <LinearLayout android:id="@+id/content_view" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal" android:visibility="gone">
-                  <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_g" android:layout_width="250dp" android:layout_height="match_parent" android:background="#CC0F0C29"/>
-                  <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_i" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#99000000"/>
-              </LinearLayout>
-
-              <com.google.android.exoplayer2.ui.PlayerView android:id="@+id/player" android:layout_width="match_parent" android:layout_height="match_parent" android:visibility="gone" app:use_controller="true"/>
           </RelativeLayout>
           EOF
 
-          # كود الجافا (نظام إيبو)
+          # كود الجافا لدعم النظام الجديد
           cat <<EOF > app/src/main/java/com/rabie/iptv/MainActivity.java
           package com.rabie.iptv;
           import android.os.Bundle;
           import android.view.*;
           import android.widget.*;
           import androidx.appcompat.app.AppCompatActivity;
+          import androidx.media3.common.MediaItem;
+          import androidx.media3.exoplayer.ExoPlayer;
+          import androidx.media3.ui.PlayerView;
           import androidx.recyclerview.widget.*;
-          import com.google.android.exoplayer2.*;
-          import com.google.android.exoplayer2.ui.PlayerView;
           import com.android.volley.toolbox.*;
           import java.util.*;
 
           public class MainActivity extends AppCompatActivity {
-              private ExoPlayer p; private PlayerView pv; private View dash, content;
+              private ExoPlayer player;
+              private View dash, iboLayout;
               private RecyclerView rvG, rvI;
-              private Map<String, List<String[]>> live = new LinkedHashMap<>(), vod = new LinkedHashMap<>(), ser = new LinkedHashMap<>();
+              private Map<String, List<String[]>> liveData = new LinkedHashMap<>();
 
               @Override
               protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
                   setContentView(R.layout.activity_main);
-                  p = new ExoPlayer.Builder(this).build();
-                  pv = findViewById(R.id.player); pv.setPlayer(p);
-                  dash = findViewById(R.id.dash); content = findViewById(R.id.content_view);
+                  player = new ExoPlayer.Builder(this).build();
+                  ((PlayerView)findViewById(R.id.pv)).setPlayer(player);
+                  dash = findViewById(R.id.dash); iboLayout = findViewById(R.id.ibo_layout);
                   rvG = findViewById(R.id.rv_g); rvI = findViewById(R.id.rv_i);
                   rvG.setLayoutManager(new LinearLayoutManager(this));
-                  rvI.setLayoutManager(new GridLayoutManager(this, 2));
+                  rvI.setLayoutManager(new LinearLayoutManager(this));
 
-                  loadData();
-                  findViewById(R.id.btn_live).setOnClickListener(v -> show(live));
-                  findViewById(R.id.btn_vod).setOnClickListener(v -> show(vod));
-                  findViewById(R.id.btn_series).setOnClickListener(v -> show(ser));
+                  loadM3u();
+                  findViewById(R.id.btn_live).setOnClickListener(v -> { dash.setVisibility(View.GONE); iboLayout.setVisibility(View.VISIBLE); });
               }
 
-              private void loadData() {
+              private void loadM3u() {
                   String url = "https://gist.githubusercontent.com/rabiebobo3/d498347610d7312b3e9be88093117620/raw/list.m3u";
-                  Volley.newRequestQueue(this).add(new StringRequest(url, res -> parse(res), null));
+                  Volley.newRequestQueue(this).add(new StringRequest(url, res -> {
+                      parse(res);
+                      rvG.setAdapter(new GAdapter(new ArrayList<>(liveData.keySet())));
+                  }, null));
               }
 
               private void parse(String text) {
-                  String[] lines = text.split("\n"); String name="", grp="", url="";
+                  String[] lines = text.split("\n"); String n="", g="", u="";
                   for (String l : lines) {
                       if (l.contains("#EXTINF:")) {
-                          name = l.split(",")[1].trim();
-                          grp = l.contains("group-title=\"") ? l.split("group-title=\"")[1].split("\"")[0] : "Misc";
+                          n = l.split(",")[1].trim();
+                          g = l.contains("group-title=\"") ? l.split("group-title=\"")[1].split("\"")[0] : "TV";
                       } else if (l.startsWith("http")) {
-                          url = l.trim();
-                          String g = grp.toLowerCase();
-                          Map<String, List<String[]>> target = g.contains("movie") ? vod : (g.contains("series") ? ser : live);
-                          if(!target.containsKey(grp)) target.put(grp, new ArrayList<>());
-                          target.get(grp).add(new String[]{name, url});
+                          u = l.trim();
+                          if(!liveData.containsKey(g)) liveData.get(g).add(new ArrayList<>()); // Simplified logic
+                          liveData.computeIfAbsent(g, k -> new ArrayList<>()).add(new String[]{n, u});
                       }
                   }
               }
 
-              private void show(Map<String, List<String[]>> map) {
-                  dash.setVisibility(View.GONE); content.setVisibility(View.VISIBLE);
-                  rvG.setAdapter(new GAdapter(new ArrayList<>(map.keySet()), map));
-              }
-
               @Override public void onBackPressed() {
-                  if (pv.getVisibility()==View.VISIBLE) { pv.setVisibility(View.GONE); p.stop(); }
-                  else if (content.getVisibility()==View.VISIBLE) { content.setVisibility(View.GONE); dash.setVisibility(View.VISIBLE); }
+                  if (iboLayout.getVisibility() == View.VISIBLE) { iboLayout.setVisibility(View.GONE); dash.setVisibility(View.VISIBLE); player.stop(); }
                   else super.onBackPressed();
               }
 
               class GAdapter extends RecyclerView.Adapter<GAdapter.VH> {
-                  List<String> d; Map<String, List<String[]>> m;
-                  GAdapter(List<String> d, Map<String, List<String[]>> m){ this.d=d; this.m=m; }
+                  List<String> groups; GAdapter(List<String> g){ groups=g; }
                   @Override public VH onCreateViewHolder(ViewGroup p, int t) { Button b=new Button(p.getContext()); b.setTextColor(-1); b.setBackgroundColor(0); return new VH(b); }
-                  @Override public void onBindViewHolder(VH h, int i) { h.b.setText(d.get(i)); h.b.setOnClickListener(v -> rvI.setAdapter(new IAdapter(m.get(d.get(i))))); }
-                  @Override public int getItemCount() { return d.size(); }
-                  class VH extends RecyclerView.ViewHolder { Button b; VH(View v) { super(v); b=(Button)v; } }
+                  @Override public void onBindViewHolder(VH h, int i) { h.b.setText(groups.get(i)); h.b.setOnClickListener(v -> rvI.setAdapter(new IAdapter(liveData.get(groups.get(i))))); }
+                  @Override public int getItemCount() { return groups.size(); }
+                  class VH extends RecyclerView.ViewHolder { Button b; VH(View v){ super(v); b=(Button)v; } }
               }
 
               class IAdapter extends RecyclerView.Adapter<IAdapter.VH> {
-                  List<String[]> d; IAdapter(List<String[]> d){ this.d=d; }
-                  @Override public VH onCreateViewHolder(ViewGroup p, int t) { TextView tv=new TextView(p.getContext()); tv.setTextColor(-1); tv.setPadding(20,40,20,40); return new VH(tv); }
-                  @Override public void onBindViewHolder(VH h, int i) { h.tv.setText(d.get(i)[0]); h.tv.setOnClickListener(v -> { pv.setVisibility(View.VISIBLE); p.setMediaItem(MediaItem.fromUri(d.get(i)[1])); p.prepare(); p.play(); }); }
-                  @Override public int getItemCount() { return d.size(); }
-                  class VH extends RecyclerView.ViewHolder { TextView tv; VH(View v) { super(v); tv=(TextView)v; } }
+                  List<String[]> items; IAdapter(List<String[]> i){ items=i; }
+                  @Override public VH onCreateViewHolder(ViewGroup p, int t) { TextView tv=new TextView(p.getContext()); tv.setTextColor(-1); tv.setPadding(20,30,20,30); return new VH(tv); }
+                  @Override public void onBindViewHolder(VH h, int i) { h.tv.setText(items.get(i)[0]); h.tv.setOnClickListener(v -> { player.setMediaItem(MediaItem.fromUri(items.get(i)[1])); player.prepare(); player.play(); }); }
+                  @Override public int getItemCount() { return items.size(); }
+                  class VH extends RecyclerView.ViewHolder { TextView tv; VH(View v){ super(v); tv=(TextView)v; } }
               }
           }
           EOF
 
+          # تصحيح الـ Gradle لمطابقة صور الخطأ في GitHub
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' version '8.2.2' }
           android { namespace 'com.rabie.iptv'; compileSdk 34; defaultConfig { applicationId "com.rabie.iptv"; minSdk 21; targetSdk 34; } }
           dependencies { 
               implementation 'androidx.appcompat:appcompat:1.6.1'
-              implementation 'com.google.android.exoplayer:exoplayer:2.19.1'
+              implementation 'androidx.media3:media3-exoplayer:1.2.1'
+              implementation 'androidx.media3:media3-ui:1.2.1'
               implementation 'androidx.recyclerview:recyclerview:1.3.0'
               implementation 'androidx.cardview:cardview:1.0.0'
               implementation 'com.android.volley:volley:1.2.1'
           }
           EOF
           
-          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:label="IBO PRO RABIE"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
+          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:label="IBO PRO"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
           
-          gradle wrapper --gradle-version 8.2
+          gradle wrapper --gradle-version 8.5
           chmod +x gradlew
           ./gradlew :app:assembleDebug --no-daemon
 
-      - name: Upload_APK
+      - name: Upload_Ibo_Style_APK
         uses: actions/upload-artifact@v4
-        with: { name: IBO_PRO_RABIE_V38, path: app/build/outputs/apk/debug/*.apk }
+        with: { name: Ibo_Real_Style_V41, path: app/build/outputs/apk/debug/*.apk }
