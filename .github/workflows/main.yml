@@ -1,4 +1,4 @@
-name: Rabie_Pro_V20_Final_Fix
+name: Rabie_Pro_V21_Pure_Design
 on: [push]
 jobs:
   build:
@@ -8,32 +8,19 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_Clean_Design
+      - name: Build_Clean_APK
         run: |
-          # تنظيف وبناء الهيكل من الصفر
           rm -rf app settings.gradle build.gradle gradle.properties .gradle gradlew gradlew.bat gradle
           echo "android.useAndroidX=true" > gradle.properties
           echo "android.enableJetifier=true" >> gradle.properties
-          
           echo "pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }; dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }; include ':app'" > settings.gradle
 
-          mkdir -p app/src/main/java/com/rabie/iptv
-          mkdir -p app/src/main/res/layout
-          mkdir -p app/src/main/res/drawable
-          mkdir -p app/src/main/res/xml
+          mkdir -p app/src/main/java/com/rabie/iptv app/src/main/res/layout app/src/main/res/drawable app/src/main/res/xml
 
-          # إصلاح مشكلة الروابط غير المشفرة (HTTP)
+          # ملف الأمان للروابط الخارجية
           echo '<?xml version="1.0" encoding="utf-8"?><network-security-config><base-config cleartextTrafficPermitted="true"/></network-security-config>' > app/src/main/res/xml/network_security_config.xml
 
-          # تصميم التحديد الرفيع والأنيق
-          cat <<EOF > app/src/main/res/drawable/focus_border.xml
-          <shape xmlns:android="http://schemas.android.com/apk/res/android">
-              <stroke android:width="2dp" android:color="#ff9100"/>
-              <solid android:color="#2d2445"/>
-          </shape>
-          EOF
-
-          # الواجهة: ترتيبك الجميل (المشغل يسار - القنوات وسط - الأقسام يمين)
+          # واجهة التصميم الأنيق (بدون فوضى بصرية)
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -42,43 +29,43 @@ jobs:
               android:orientation="vertical" android:background="#0a0714" android:layoutDirection="rtl">
               
               <LinearLayout android:layout_width="match_parent" android:layout_height="60dp" android:background="#000" android:gravity="center_vertical" android:paddingHorizontal="15dp">
-                  <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE PRO" android:textColor="#ff9100" android:textSize="20sp" android:fontFamily="sans-serif-medium"/>
-                  <Button android:id="@+id/btn_refresh" android:layout_width="40dp" android:layout_height="40dp" android:text="🔄" android:backgroundTint="#1c142e" android:layout_marginRight="10dp"/>
-                  <Button android:id="@+id/btn_toggle_fav" android:layout_width="wrap_content" android:layout_height="38dp" android:text="أضف ⭐" android:backgroundTint="#2d2445" android:textSize="11sp" android:layout_marginRight="5dp"/>
+                  <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE PRO" android:textColor="#ff9100" android:textSize="19sp" android:fontFamily="sans-serif-medium"/>
+                  <Button android:id="@+id/btn_refresh" android:layout_width="38dp" android:layout_height="38dp" android:text="🔄" android:backgroundTint="#1c142e" android:layout_marginRight="10dp" android:padding="0dp"/>
+                  <Button android:id="@+id/btn_toggle_fav" android:layout_width="wrap_content" android:layout_height="35dp" android:text="أضف ⭐" android:backgroundTint="#2d2445" android:textSize="10sp" android:layout_marginRight="5dp" android:fontFamily="sans-serif-light"/>
                   <View android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"/>
-                  <TextView android:id="@+id/tab_live" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="القنوات" android:textColor="#ff9100" android:padding="10dp" android:focusable="true"/>
-                  <TextView android:id="@+id/tab_movie" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="الأفلام" android:textColor="#FFF" android:padding="10dp" android:alpha="0.7" android:focusable="true"/>
-                  <TextView android:id="@+id/tab_series" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="مسلسلات" android:textColor="#FFF" android:padding="10dp" android:alpha="0.7" android:focusable="true"/>
+                  <TextView android:id="@+id/tab_live" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="القنوات" android:textColor="#ff9100" android:paddingHorizontal="12dp" android:textSize="14sp" android:fontFamily="sans-serif-light"/>
+                  <TextView android:id="@+id/tab_movie" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="الأفلام" android:textColor="#FFF" android:paddingHorizontal="12dp" android:textSize="14sp" android:alpha="0.6" android:fontFamily="sans-serif-light"/>
+                  <TextView android:id="@+id/tab_series" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="مسلسلات" android:textColor="#FFF" android:paddingHorizontal="12dp" android:textSize="14sp" android:alpha="0.6" android:fontFamily="sans-serif-light"/>
               </LinearLayout>
 
               <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal">
-                  <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_groups" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.22" android:background="#1c142e"/>
-                  <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_items" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.28" android:background="#130d21"/>
+                  <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_groups" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.22" android:background="#130d21"/>
+                  <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_items" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.28" android:background="#18112b"/>
                   <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.5" android:orientation="vertical">
                       <androidx.media3.ui.PlayerView android:id="@+id/small_player" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.6" android:background="#000" app:use_controller="false"/>
-                      <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.4" android:padding="20dp" android:background="#1c142e" android:orientation="vertical">
-                          <TextView android:id="@+id/display_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE TV" android:textColor="#ff9100" android:textSize="22sp"/>
-                          <TextView android:id="@+id/group_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="اختر قناة" android:textColor="#aaa" android:layout_marginTop="5dp"/>
+                      <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.4" android:padding="20dp" android:background="#130d21" android:orientation="vertical">
+                          <TextView android:id="@+id/display_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE TV" android:textColor="#ff9100" android:textSize="21sp" android:fontFamily="sans-serif-light"/>
+                          <TextView android:id="@+id/group_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="اختر قناة للمشاهدة" android:textColor="#888" android:textSize="13sp" android:layout_marginTop="8dp" android:fontFamily="sans-serif-light"/>
                       </LinearLayout>
                   </LinearLayout>
               </LinearLayout>
           </LinearLayout>
           EOF
 
-          # تصميم عنصر القناة (الخط الرفيع)
+          # تصميم العناصر الفردية (بدون مربعات)
           cat <<EOF > app/src/main/res/layout/item_channel.xml
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent" android:layout_height="wrap_content"
-              android:padding="12dp" android:gravity="center_vertical" android:focusable="true" 
-              android:background="@drawable/focus_border" android:layoutDirection="rtl">
-              <ImageView android:id="@+id/img_logo" android:layout_width="35dp" android:layout_height="35dp" android:layout_marginLeft="12dp"/>
+              android:padding="12dp" android:gravity="center_vertical" 
+              android:background="?android:attr/selectableItemBackground" android:layoutDirection="rtl">
+              <ImageView android:id="@+id/img_logo" android:layout_width="32dp" android:layout_height="32dp" android:layout_marginLeft="12dp" android:scaleType="centerInside"/>
               <TextView android:id="@+id/txt_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#FFF" android:textSize="14sp" android:fontFamily="sans-serif-light"/>
           </LinearLayout>
           EOF
 
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' version '8.2.2' }
-          android { namespace 'com.rabie.iptv'; compileSdk 34; defaultConfig { applicationId "com.rabie.iptv"; minSdk 21; targetSdk 34; versionCode 20; versionName "20.0" } }
+          android { namespace 'com.rabie.iptv'; compileSdk 34; defaultConfig { applicationId "com.rabie.iptv"; minSdk 21; targetSdk 34; versionCode 21; versionName "21.0" } }
           dependencies { 
               implementation 'androidx.appcompat:appcompat:1.6.1'
               implementation 'androidx.media3:media3-exoplayer:1.2.1'
@@ -120,6 +107,9 @@ jobs:
                   rvG = findViewById(R.id.rv_groups); rvI = findViewById(R.id.rv_items);
                   rvG.setLayoutManager(new LinearLayoutManager(this)); rvI.setLayoutManager(new LinearLayoutManager(this));
                   loadData();
+                  findViewById(R.id.tab_live).setOnClickListener(v -> setMode("live"));
+                  findViewById(R.id.tab_movie).setOnClickListener(v -> setMode("movie"));
+                  findViewById(R.id.tab_series).setOnClickListener(v -> setMode("series"));
               }
               private void setMode(String m) {
                   Map<String, List<Ch>> d = m.equals("movie") ? movie : (m.equals("series") ? series : live);
@@ -132,7 +122,7 @@ jobs:
                   String[] lines = text.split("\n"); Ch cur = null;
                   for (String l : lines) {
                       if (l.contains("#EXTINF:")) {
-                          cur = new Ch(); cur.n = l.split(",").length > 1 ? l.split(",")[1].trim() : "";
+                          cur = new Ch(); cur.n = l.split(",").length > 1 ? l.split(",")[1].trim() : "Unknown";
                           cur.g = l.contains("group-title=\"") ? l.split("group-title=\"")[1].split("\"")[0] : "General";
                           cur.l = l.contains("tvg-logo=\"") ? l.split("tvg-logo=\"")[1].split("\"")[0] : "";
                       } else if (l.startsWith("http") && cur != null) {
@@ -144,13 +134,13 @@ jobs:
                   }
               }
               class GAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-                  List<String> groups; Map<String, List<Ch>> data; GAdapter(List<String> g, Map<String, List<Ch>> d) { groups = g; data = d; }
+                  List<String> g; Map<String, List<Ch>> d; GAdapter(List<String> g, Map<String, List<Ch>> d) { this.g = g; this.d = d; }
                   public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup p, int t) { 
-                      TextView tv = new TextView(p.getContext()); tv.setTextColor(-1); tv.setPadding(25,25,25,25); tv.setFocusable(true);
-                      tv.setBackgroundResource(R.drawable.focus_border); return new RecyclerView.ViewHolder(tv){};
+                      TextView tv = new TextView(p.getContext()); tv.setTextColor(-1); tv.setPadding(30,25,30,25); tv.setFocusable(true);
+                      tv.setBackgroundResource(android.R.drawable.list_selector_background); return new RecyclerView.ViewHolder(tv){};
                   }
-                  public void onBindViewHolder(RecyclerView.ViewHolder h, int i) { ((TextView)h.itemView).setText(groups.get(i)); h.itemView.setOnClickListener(v -> rvI.setAdapter(new IAdapter(data.get(groups.get(i))))); }
-                  public int getItemCount() { return groups.size(); }
+                  public void onBindViewHolder(RecyclerView.ViewHolder h, int i) { ((TextView)h.itemView).setText(g.get(i)); h.itemView.setOnClickListener(v -> rvI.setAdapter(new IAdapter(d.get(g.get(i))))); }
+                  public int getItemCount() { return g.size(); }
               }
               class IAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                   List<Ch> items; IAdapter(List<Ch> i) { items = i; }
@@ -165,13 +155,12 @@ jobs:
           }
           EOF
 
-          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:networkSecurityConfig="@xml/network_security_config" android:label="Rabie Pro Final"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
+          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:networkSecurityConfig="@xml/network_security_config" android:label="Rabie Pro V21"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
 
-          # الخطوة السحرية التي كانت ناقصة وتسببت في الخطأ:
           gradle wrapper --gradle-version 8.5
           chmod +x gradlew
           ./gradlew :app:assembleDebug --no-daemon
 
-      - name: Success_Upload
+      - name: Final_APK_Clean
         uses: actions/upload-artifact@v4
-        with: { name: Rabie_Pro_V20_Fixed, path: app/build/outputs/apk/debug/*.apk }
+        with: { name: Rabie_Pro_V21_Pure, path: app/build/outputs/apk/debug/*.apk }
