@@ -1,4 +1,4 @@
-name: Rabie_Pro_V21_Ultimate
+name: Rabie_Pro_V22_Fix
 on: [push]
 jobs:
   build:
@@ -8,11 +8,20 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_V21
+      - name: Build_V22
         run: |
+          # 1. تنظيف وبناء الهيكل بشكل صحيح
           rm -rf app settings.gradle build.gradle gradle.properties .gradle
+          mkdir -p app/src/main/java/com/rabie/iptv
+          mkdir -p app/src/main/res/layout
+          mkdir -p app/src/main/res/drawable
+          mkdir -p app/src/main/res/xml
+
+          # 2. إنشاء ملف Manifest (الإصلاح الجوهري للخطأ)
+          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:networkSecurityConfig="@xml/network_security_config" android:label="Rabie Pro V22" android:icon="@android:drawable/btn_star"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape" android:configChanges="orientation|screenSize"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/><category android:name="android.intent.category.LEANBACK_LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
+
+          # 3. إعدادات Gradle
           echo "android.useAndroidX=true" > gradle.properties
-          
           cat <<EOF > settings.gradle
           pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
           dependencyResolutionManagement {
@@ -22,205 +31,10 @@ jobs:
           include ':app'
           EOF
 
-          mkdir -p app/src/main/java/com/rabie/iptv
-          mkdir -p app/src/main/res/layout
-          mkdir -p app/src/main/res/drawable
-          mkdir -p app/src/main/res/xml
-
-          cat <<EOF > app/src/main/res/xml/network_security_config.xml
-          <?xml version="1.0" encoding="utf-8"?>
-          <network-security-config><base-config cleartextTrafficPermitted="true"/></network-security-config>
-          EOF
-
-          # تصميم الواجهة الرئيسية المطور - بدون إطارات
-          cat <<EOF > app/src/main/res/layout/activity_main.xml
-          <?xml version="1.0" encoding="utf-8"?>
-          <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              android:layout_width="match_parent" android:layout_height="match_parent" 
-              android:background="#050505" android:keepScreenOn="true">
-              
-              <LinearLayout android:id="@+id/main_ui_container" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal">
-                  
-                  <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.6" android:orientation="vertical" android:padding="10dp">
-                      <RelativeLayout android:layout_width="match_parent" android:layout_height="50dp">
-                          <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE PRO" android:textColor="#ff9100" android:textStyle="bold" android:textSize="22sp"/>
-                          <EditText android:id="@+id/search_bar" android:layout_width="160dp" android:layout_height="35dp" android:hint="🔍 بحث سريع..." android:textColor="#FFF" android:background="@drawable/search_style" android:paddingHorizontal="12dp" android:textSize="13sp" android:layout_alignParentRight="true"/>
-                      </RelativeLayout>
-
-                      <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
-                          <androidx.media3.ui.PlayerView android:id="@+id/small_player" android:layout_width="match_parent" android:layout_height="match_parent" app:use_controller="false" app:resize_mode="fill" android:background="#000"/>
-                          <ProgressBar android:id="@+id/loading_s" android:layout_width="50dp" android:layout_height="50dp" android:layout_gravity="center" android:visibility="gone" android:indeterminateTint="#ff9100"/>
-                      </FrameLayout>
-
-                      <TextView android:id="@+id/txt_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="10dp" android:text="إختر محتوى للمشاهدة" android:textColor="#ff9100" android:textSize="18sp" android:gravity="center" android:textStyle="bold"/>
-                  </LinearLayout>
-
-                  <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.4" android:orientation="vertical" android:background="#0A0A0A">
-                      <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="5dp">
-                          <Button android:id="@+id/tab_fav" android:layout_width="40dp" android:layout_height="40dp" android:text="⭐" android:background="@drawable/tab_style" android:textColor="#FFF" android:focusable="true"/>
-                          <Button android:id="@+id/tab_series" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:text="مسلسلات" android:background="@drawable/tab_style" android:textColor="#FFF" android:layout_marginLeft="3dp" android:focusable="true"/>
-                          <Button android:id="@+id/tab_movie" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:text="أفلام" android:background="@drawable/tab_style" android:textColor="#FFF" android:layout_marginLeft="3dp" android:focusable="true"/>
-                          <Button android:id="@+id/tab_live" android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:text="قنوات" android:background="@drawable/tab_style_active" android:textColor="#000" android:layout_marginLeft="3dp" android:focusable="true"/>
-                      </LinearLayout>
-                      
-                      <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal">
-                          <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_items" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"/>
-                          <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_groups" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.75" android:background="#050505"/>
-                      </LinearLayout>
-                  </LinearLayout>
-              </LinearLayout>
-
-              <FrameLayout android:id="@+id/full_container" android:layout_width="match_parent" android:layout_height="match_parent" android:visibility="gone" android:background="#000">
-                  <androidx.media3.ui.PlayerView android:id="@+id/full_player" android:layout_width="match_parent" android:layout_height="match_parent" app:use_controller="false" app:resize_mode="fill"/>
-                  <ProgressBar android:id="@+id/loading_f" android:layout_width="65dp" android:layout_height="65dp" android:layout_gravity="center" android:visibility="gone" android:indeterminateTint="#ff9100"/>
-                  
-                  <RelativeLayout android:id="@+id/overlay_full" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#AA000000" android:visibility="gone">
-                      <TextView android:id="@+id/full_ch_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerHorizontal="true" android:layout_marginTop="30dp" android:textColor="#ff9100" android:textSize="24sp" android:textStyle="bold"/>
-                      
-                      <LinearLayout android:id="@+id/vod_controls" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:layout_alignParentBottom="true" android:padding="40dp">
-                          <SeekBar android:id="@+id/full_seekbar" android:layout_width="match_parent" android:layout_height="wrap_content" android:progressTint="#ff9100" android:thumbTint="#ff9100" android:focusable="true" android:splitTrack="false"/>
-                          <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:layout_marginTop="15dp">
-                              <TextView android:id="@+id/txt_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="00:00 / 00:00" android:textColor="#FFF" android:textSize="16sp"/>
-                              <Button android:id="@+id/btn_play_pause" android:layout_width="65dp" android:layout_height="65dp" android:text="⏸" android:backgroundTint="#ff9100" android:layout_marginHorizontal="40dp" android:focusable="true"/>
-                          </LinearLayout>
-                      </LinearLayout>
-                  </RelativeLayout>
-              </FrameLayout>
-          </RelativeLayout>
-          EOF
-
-          # ملفات التنسيق Drawable
-          cat <<EOF > app/src/main/res/drawable/search_style.xml
-          <shape xmlns:android="http://schemas.android.com/apk/res/android"><solid android:color="#22ffffff"/><corners android:radius="15dp"/></shape>
-          EOF
-          cat <<EOF > app/src/main/res/drawable/tab_style.xml
-          <selector xmlns:android="http://schemas.android.com/apk/res/android">
-              <item android:state_focused="true"><shape><solid android:color="#ff9100"/><corners android:radius="5dp"/></shape></item>
-              <item><shape><solid android:color="#151515"/><corners android:radius="5dp"/></shape></item>
-          </selector>
-          EOF
-          cat <<EOF > app/src/main/res/drawable/tab_style_active.xml
-          <shape xmlns:android="http://schemas.android.com/apk/res/android"><solid android:color="#ff9100"/><corners android:radius="5dp"/></shape>
-          EOF
-
-          cat <<EOF > app/src/main/java/com/rabie/iptv/MainActivity.java
-          package com.rabie.iptv;
-          import android.os.*;
-          import android.view.*;
-          import android.widget.*;
-          import androidx.appcompat.app.AppCompatActivity;
-          import androidx.media3.common.*;
-          import androidx.media3.exoplayer.*;
-          import androidx.media3.ui.PlayerView;
-          import androidx.recyclerview.widget.*;
-          import com.android.volley.toolbox.*;
-          import com.google.gson.Gson;
-          import java.util.*;
-
-          public class MainActivity extends AppCompatActivity {
-              private ExoPlayer player;
-              private View fullCont, overlay, vodControls;
-              private SeekBar seekBar;
-              private TextView tTime, tFullChName, tTitle;
-              private ProgressBar ps, pf;
-              private Button btnPlayPause;
-              private String currentMode = "live";
-              private Ch currentCh;
-              private Handler handler = new Handler();
-
-              static class Ch { String n, u, g, l; }
-
-              @Override
-              protected void onCreate(Bundle savedInstanceState) {
-                  super.onCreate(savedInstanceState);
-                  setContentView(R.layout.activity_main);
-
-                  // إعداد المشغل مع ذاكرة مؤقتة قوية لمنع التجمد
-                  DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
-                      .setBufferMs(15000, 50000, 2500, 5000).build();
-                  player = new ExoPlayer.Builder(this).setLoadControl(loadControl).build();
-
-                  fullCont = findViewById(R.id.full_container);
-                  overlay = findViewById(R.id.overlay_full);
-                  vodControls = findViewById(R.id.vod_controls);
-                  seekBar = findViewById(R.id.full_seekbar);
-                  tTime = findViewById(R.id.txt_time);
-                  tFullChName = findViewById(R.id.full_ch_name);
-                  tTitle = findViewById(R.id.txt_title);
-                  btnPlayPause = findViewById(R.id.btn_play_pause);
-                  ps = findViewById(R.id.loading_s); pf = findViewById(R.id.loading_f);
-
-                  ((PlayerView)findViewById(R.id.small_player)).setPlayer(player);
-                  ((PlayerView)findViewById(R.id.full_player)).setPlayer(player);
-
-                  player.addListener(new Player.Listener() {
-                      @Override public void onPlaybackStateChanged(int s) {
-                          int v = (s == Player.STATE_BUFFERING) ? View.VISIBLE : View.GONE;
-                          ps.setVisibility(v); pf.setVisibility(v);
-                      }
-                      @Override public void onPlayerError(PlaybackException e) {
-                          player.prepare(); player.play(); // إعادة محاولة تلقائية عند الخطأ
-                      }
-                  });
-
-                  // التحكم باللمس والريموت
-                  findViewById(R.id.full_player).setOnClickListener(v -> toggleOverlay());
-                  btnPlayPause.setOnClickListener(v -> { if(player.isPlaying()) player.pause(); else player.play(); });
-
-                  seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                      @Override public void onProgressChanged(SeekBar sb, int p, boolean f) { if(f) player.seekTo(p); }
-                      @Override public void onStartTrackingTouch(SeekBar sb) {}
-                      @Override public void onStopTrackingTouch(SeekBar sb) {}
-                  });
-
-                  updateProgress();
-              }
-
-              @Override
-              public boolean onKeyDown(int keyCode, KeyEvent event) {
-                  if (fullCont.getVisibility() == View.VISIBLE) {
-                      showOverlay(); // إظهار الشريط عند ضغط أي زر
-                      if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_ENTER) {
-                          btnPlayPause.performClick(); return true;
-                      }
-                      if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) { player.seekTo(player.getCurrentPosition() + 10000); return true; }
-                      if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) { player.seekTo(player.getCurrentPosition() - 10000); return true; }
-                  }
-                  return super.onKeyDown(keyCode, event);
-              }
-
-              private void showOverlay() {
-                  overlay.setVisibility(View.VISIBLE);
-                  tFullChName.setText(currentCh != null ? currentCh.n : "");
-                  vodControls.setVisibility(currentMode.equals("live") ? View.GONE : View.VISIBLE);
-                  handler.removeCallbacks(hideRunnable);
-                  handler.postDelayed(hideRunnable, 5000);
-              }
-
-              private void toggleOverlay() { if(overlay.getVisibility() == View.VISIBLE) overlay.setVisibility(View.GONE); else showOverlay(); }
-              private Runnable hideRunnable = () -> overlay.setVisibility(View.GONE);
-
-              private void updateProgress() {
-                  if (player != null && !currentMode.equals("live")) {
-                      seekBar.setMax((int)player.getDuration());
-                      seekBar.setProgress((int)player.getCurrentPosition());
-                      tTime.setText(format(player.getCurrentPosition()) + " / " + format(player.getDuration()));
-                  }
-                  handler.postDelayed(this::updateProgress, 1000);
-              }
-
-              private String format(long ms) {
-                  long s = (ms/1000)%60, m = (ms/60000)%60, h = ms/3600000;
-                  return h>0 ? String.format("%02d:%02d:%02d",h,m,s) : String.format("%02d:%02d",m,s);
-              }
-              // (بقية الدوال الخاصة بالتحميل والـ Adapter تضاف هنا كالمعتاد)
-          }
-          EOF
-
+          # 4. بناء دالة التحميل القوية واجهة المستخدم
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' version '8.2.2' }
-          android { namespace 'com.rabie.iptv'; compileSdk 34; defaultConfig { applicationId "com.rabie.iptv"; minSdk 21; targetSdk 34; versionCode 21; versionName "21.0" } }
+          android { namespace 'com.rabie.iptv'; compileSdk 34; defaultConfig { applicationId "com.rabie.iptv"; minSdk 21; targetSdk 34; versionCode 22; versionName "22.0" } }
           dependencies { 
               implementation 'androidx.appcompat:appcompat:1.6.1'
               implementation 'androidx.media3:media3-exoplayer:1.2.1'
@@ -231,5 +45,101 @@ jobs:
           }
           EOF
 
+          # 5. واجهة المستخدم (Layout) - بدون إطارات مع شريط تحكم
+          cat <<EOF > app/src/main/res/layout/activity_main.xml
+          <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent" android:layout_height="match_parent" android:background="#050505">
+              
+              <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal">
+                  <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.6" android:orientation="vertical" android:padding="5dp">
+                      <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:background="#000">
+                          <androidx.media3.ui.PlayerView android:id="@+id/small_player" android:layout_width="match_parent" android:layout_height="match_parent" app:use_controller="false"/>
+                          <ProgressBar android:id="@+id/loading_s" android:layout_width="50dp" android:layout_height="50dp" android:layout_gravity="center" android:visibility="gone" android:indeterminateTint="#ff9100"/>
+                      </FrameLayout>
+                      <TextView android:id="@+id/txt_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#ff9100" android:gravity="center" android:padding="5dp" android:textStyle="bold"/>
+                  </LinearLayout>
+
+                  <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.4" android:orientation="vertical" android:background="#0A0A0A">
+                      <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="5dp">
+                          <Button android:id="@+id/tab_live" android:layout_width="0dp" android:layout_weight="1" android:layout_height="40dp" android:text="قنوات" android:backgroundTint="#ff9100" android:textColor="#000"/>
+                          <Button android:id="@+id/tab_movie" android:layout_width="0dp" android:layout_weight="1" android:layout_height="40dp" android:text="أفلام" android:backgroundTint="#111" android:textColor="#FFF"/>
+                      </LinearLayout>
+                      <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_items" android:layout_width="match_parent" android:layout_height="match_parent"/>
+                  </LinearLayout>
+              </LinearLayout>
+
+              <FrameLayout android:id="@+id/full_container" android:layout_width="match_parent" android:layout_height="match_parent" android:visibility="gone">
+                  <androidx.media3.ui.PlayerView android:id="@+id/full_player" android:layout_width="match_parent" android:layout_height="match_parent" app:use_controller="false"/>
+                  <RelativeLayout android:id="@+id/overlay" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#99000000" android:visibility="gone">
+                      <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_alignParentBottom="true" android:orientation="vertical" android:padding="30dp">
+                          <SeekBar android:id="@+id/seekbar" android:layout_width="match_parent" android:layout_height="wrap_content" android:progressTint="#ff9100" android:thumbTint="#ff9100"/>
+                          <TextView android:id="@+id/time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#FFF" android:layout_gravity="center"/>
+                      </LinearLayout>
+                  </RelativeLayout>
+              </FrameLayout>
+          </RelativeLayout>
+          EOF
+
+          # 6. الكود البرمجي (MainActivity)
+          cat <<EOF > app/src/main/java/com/rabie/iptv/MainActivity.java
+          package com.rabie.iptv;
+          import android.os.*;
+          import android.view.*;
+          import android.widget.*;
+          import androidx.appcompat.app.AppCompatActivity;
+          import androidx.media3.common.*;
+          import androidx.media3.exoplayer.*;
+          import androidx.media3.ui.PlayerView;
+
+          public class MainActivity extends AppCompatActivity {
+              private ExoPlayer player;
+              private View overlay, fullCont;
+              private SeekBar sb;
+              private Handler h = new Handler();
+
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  setContentView(R.layout.activity_main);
+                  
+                  // دالة تحميل قوية لمنع التجمد
+                  DefaultLoadControl lc = new DefaultLoadControl.Builder().setBufferMs(15000, 50000, 2500, 5000).build();
+                  player = new ExoPlayer.Builder(this).setLoadControl(lc).build();
+                  
+                  overlay = findViewById(R.id.overlay);
+                  fullCont = findViewById(R.id.full_container);
+                  sb = findViewById(R.id.seekbar);
+
+                  // ربط OK واللمس لإظهار الشريط
+                  findViewById(R.id.full_player).setOnClickListener(v -> toggleOverlay());
+                  
+                  sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                      @Override public void onProgressChanged(SeekBar s, int p, boolean f) { if(f) player.seekTo(p); }
+                      @Override public void onStartTrackingTouch(SeekBar s) {}
+                      @Override public void onStopTrackingTouch(SeekBar s) {}
+                  });
+              }
+
+              @Override
+              public boolean onKeyDown(int keyCode, KeyEvent event) {
+                  if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_ENTER) {
+                      toggleOverlay(); return true;
+                  }
+                  return super.onKeyDown(keyCode, event);
+              }
+
+              private void toggleOverlay() {
+                  overlay.setVisibility(View.VISIBLE);
+                  sb.setMax((int)player.getDuration());
+                  sb.setProgress((int)player.getCurrentPosition());
+                  h.removeCallbacksAndMessages(null);
+                  h.postDelayed(() -> overlay.setVisibility(View.GONE), 5000);
+              }
+          }
+          EOF
+
+          # 7. الأوامر النهائية لبناء الـ APK
+          echo '<?xml version="1.0" encoding="utf-8"?><network-security-config><base-config cleartextTrafficPermitted="true"/></network-security-config>' > app/src/main/res/xml/network_security_config.xml
           gradle wrapper --gradle-version 8.5
           ./gradlew :app:assembleDebug
