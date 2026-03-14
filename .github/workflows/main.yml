@@ -145,6 +145,7 @@ jobs:
               private Map<String, List<Ch>> live = new LinkedHashMap<>(), movie = new LinkedHashMap<>(), series = new LinkedHashMap<>();
               private List<Ch> favList = new ArrayList<>(), currentItems = new ArrayList<>();
               private Ch currentCh;
+              private int currentChIndex = -1;
               private RecyclerView rvG, rvI;
               private TextView tTitle, tTime, tFullChName;
               private PlayerView smallPV, fullPV;
@@ -188,14 +189,12 @@ jobs:
                       }
                   });
 
-                  // تفعيل التمرير اليدوي في الـ SeekBar
                   seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                       @Override public void onProgressChanged(SeekBar sb, int p, boolean fromUser) { if(fromUser) player.seekTo(p); }
                       @Override public void onStartTrackingTouch(SeekBar sb) { handler.removeCallbacks(hideOverlay); }
                       @Override public void onStopTrackingTouch(SeekBar sb) { showOverlay(); }
                   });
 
-                  // إظهار عناصر التحكم عند اللمس أو الضغط على OK
                   fullCont.setOnClickListener(v -> showOverlay());
                   fullCont.setOnKeyListener((v, code, event) -> {
                       if (event.getAction() == KeyEvent.ACTION_DOWN && (code == KeyEvent.KEYCODE_DPAD_CENTER || code == KeyEvent.KEYCODE_ENTER)) {
@@ -230,12 +229,11 @@ jobs:
                   updateProgress();
               }
 
-              // منع العمل في الخلفية
               @Override protected void onPause() { super.onPause(); if(player != null) player.pause(); }
               @Override protected void onStop() { super.onStop(); if(player != null) { player.stop(); player.release(); player = null; } finish(); }
 
-              private void playChannel(Ch c) {
-                  currentCh = c; tTitle.setText(c.n);
+              private void playChannel(Ch c, int index) {
+                  currentCh = c; currentChIndex = index; tTitle.setText(c.n);
                   player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play();
               }
 
@@ -246,6 +244,14 @@ jobs:
                   } else {
                       fullCont.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE);
                       PlayerView.switchTargetView(player, fullPV, smallPV);
+                      // العودة لنفس القناة في القائمة
+                      if(currentChIndex != -1) {
+                          rvI.scrollToPosition(currentChIndex);
+                          handler.postDelayed(() -> {
+                              View v = rvI.getLayoutManager().findViewByPosition(currentChIndex);
+                              if(v != null) v.requestFocus();
+                          }, 100);
+                      }
                   }
               }
 
@@ -254,7 +260,8 @@ jobs:
                   Map<String, List<Ch>> d = m.equals("movie") ? movie : (m.equals("series") ? series : live);
                   if (m.equals("fav")) { 
                       rvG.setAdapter(new GroupAdapter(Arrays.asList("المفضلة"), null)); 
-                      rvI.setAdapter(new ItemAdapter(favList)); 
+                      currentItems = favList;
+                      rvI.setAdapter(new ItemAdapter(currentItems)); 
                   } else {
                       List<String> groups = new ArrayList<>(d.keySet());
                       rvG.setAdapter(new GroupAdapter(groups, d));
@@ -275,7 +282,9 @@ jobs:
                   GroupAdapter(List<String> g, Map<String, List<Ch>> d) { this.g = g; this.d = d; }
                   public VH onCreateViewHolder(ViewGroup p, int t) { 
                       Button b = new Button(p.getContext()); b.setTextColor(-1); 
-                      b.setBackgroundResource(R.drawable.focus_highlight); b.setFocusable(true); return new VH(b); 
+                      b.setBackgroundResource(R.drawable.focus_highlight); b.setFocusable(true); 
+                      b.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL); b.setPadding(0,0,20,0);
+                      return new VH(b); 
                   }
                   public void onBindViewHolder(VH h, int i) { 
                       h.b.setText(g.get(i)); 
@@ -297,9 +306,10 @@ jobs:
                       Ch c = items.get(i); h.n.setText(c.n); Glide.with(h.itemView).load(c.l).into(h.img);
                       h.itemView.setOnClickListener(v -> {
                           long time = System.currentTimeMillis();
-                          if (time - lastClickTime < 400) toggleFull(true); else playChannel(c);
+                          if (time - lastClickTime < 400) toggleFull(true); else playChannel(c, i);
                           lastClickTime = time;
                       });
+                      h.itemView.setFocusable(true);
                   }
                   public int getItemCount() { return items.size(); }
                   class VH extends RecyclerView.ViewHolder { TextView n; ImageView img; VH(View v) { super(v); n = v.findViewById(R.id.txt_name); img = v.findViewById(R.id.img_logo); } }
