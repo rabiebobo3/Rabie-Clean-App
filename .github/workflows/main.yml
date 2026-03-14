@@ -1,4 +1,4 @@
-name: Rabie_Pro_V17_HTML_Mirror
+name: Rabie_Pro_V17_Final_Fix
 on: [push]
 jobs:
   build:
@@ -8,22 +8,34 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_Mirror_App
+      - name: Create_Project_Structure
         run: |
-          rm -rf app settings.gradle build.gradle gradle.properties .gradle
+          # تنظيف وبناء الهيكل من جديد
+          rm -rf app settings.gradle build.gradle gradle.properties
+          
           echo "android.useAndroidX=true" > gradle.properties
-          echo "pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }; dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }; include ':app'" > settings.gradle
+          echo "android.enableJetifier=true" >> gradle.properties
+          
+          cat <<EOF > settings.gradle
+          pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories { google(); mavenCentral() }
+          }
+          include ':app'
+          EOF
 
           mkdir -p app/src/main/java/com/rabie/iptv
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/drawable
           mkdir -p app/src/main/res/xml
 
+          # إنشاء ملف الحماية للروابط
           cat <<EOF > app/src/main/res/xml/network_security_config.xml
           <?xml version="1.0" encoding="utf-8"?><network-security-config><base-config cleartextTrafficPermitted="true"/></network-security-config>
           EOF
 
-          # واجهة طبق الأصل من كود HTML (يسار مشغل - يمين قنوات - أقصى اليمين أقسام)
+          # تصميم الواجهة طبق الأصل من HTML (يسار مشغل - يمين قنوات - أقصى اليمين أقسام)
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -32,32 +44,31 @@ jobs:
               android:background="#0a0714" android:layoutDirection="rtl">
               
               <LinearLayout android:id="@+id/splash_screen" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#000" android:gravity="center" android:elevation="20dp" android:orientation="vertical">
-                  <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE-TV" android:textColor="#ff9100" android:textSize="60sp" android:textStyle="bold" android:shadowColor="#ff9100" android:shadowDx="0" android:shadowDy="0" android:shadowRadius="20"/>
+                  <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE-TV" android:textColor="#ff9100" android:textSize="60sp" android:textStyle="bold"/>
                   <ProgressBar android:layout_width="50dp" android:layout_height="50dp" android:indeterminateTint="#ff9100" android:layout_marginTop="20dp"/>
               </LinearLayout>
 
               <LinearLayout android:id="@+id/main_ui_container" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:visibility="gone">
-                  <LinearLayout android:layout_width="match_parent" android:layout_height="55dp" android:background="#000" android:gravity="center_vertical" android:paddingHorizontal="20dp" android:elevation="4dp">
+                  <LinearLayout android:layout_width="match_parent" android:layout_height="55dp" android:background="#000" android:gravity="center_vertical" android:paddingHorizontal="20dp">
                       <LinearLayout android:layout_width="wrap_content" android:layout_height="match_parent" android:orientation="horizontal" android:gravity="center_vertical">
                           <TextView android:id="@+id/tab_live" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="القنوات" android:textColor="#ff9100" android:textStyle="bold" android:textSize="16sp" android:padding="10dp" android:focusable="true" android:clickable="true"/>
-                          <TextView android:id="@+id/tab_movie" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="الأفلام" android:textColor="#FFF" android:textStyle="bold" android:textSize="16sp" android:padding="10dp" android:layout_marginRight="15dp" android:focusable="true" android:clickable="true" android:alpha="0.5"/>
-                          <TextView android:id="@+id/tab_series" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="المسلسلات" android:textColor="#FFF" android:textStyle="bold" android:textSize="16sp" android:padding="10dp" android:layout_marginRight="15dp" android:focusable="true" android:clickable="true" android:alpha="0.5"/>
-                          <TextView android:id="@+id/tab_fav" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="المفضلة ⭐" android:textColor="#FFF" android:textStyle="bold" android:textSize="16sp" android:padding="10dp" android:layout_marginRight="15dp" android:focusable="true" android:clickable="true" android:alpha="0.5"/>
+                          <TextView android:id="@+id/tab_movie" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="الأفلام" android:textColor="#FFF" android:textStyle="bold" android:textSize="16sp" android:padding="10dp" android:alpha="0.5" android:focusable="true" android:clickable="true"/>
+                          <TextView android:id="@+id/tab_series" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="المسلسلات" android:textColor="#FFF" android:textStyle="bold" android:textSize="16sp" android:padding="10dp" android:alpha="0.5" android:focusable="true" android:clickable="true"/>
+                          <TextView android:id="@+id/tab_fav" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="المفضلة ⭐" android:textColor="#FFF" android:textStyle="bold" android:textSize="16sp" android:padding="10dp" android:alpha="0.5" android:focusable="true" android:clickable="true"/>
                       </LinearLayout>
                       <View android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"/>
-                      <Button android:id="@+id/btn_toggle_fav" android:layout_width="wrap_content" android:layout_height="38dp" android:text="⭐ أضف/حذف مفضلة" android:backgroundTint="#2d2445" android:textColor="#FFF" android:textSize="12sp" android:layout_marginRight="10dp" android:focusable="true"/>
-                      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE-TV PRO" android:textColor="#ff9100" android:textStyle="bold" android:textSize="18sp"/>
+                      <Button android:id="@+id/btn_toggle_fav" android:layout_width="wrap_content" android:layout_height="38dp" android:text="⭐ أضف/حذف" android:backgroundTint="#2d2445" android:textColor="#FFF" android:textSize="11sp" android:focusable="true"/>
+                      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE-TV PRO" android:textColor="#ff9100" android:textStyle="bold" android:textSize="18sp" android:layout_marginRight="15dp"/>
                   </LinearLayout>
 
                   <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal">
-                      <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.5" android:orientation="vertical" android:background="#000">
-                          <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.5" android:background="#000">
+                      <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.5" android:orientation="vertical">
+                          <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.5">
                               <androidx.media3.ui.PlayerView android:id="@+id/small_player" android:layout_width="match_parent" android:layout_height="match_parent" app:use_controller="false"/>
-                              <ImageView android:layout_width="100dp" android:layout_height="100dp" android:layout_gravity="center" android:src="@android:drawable/ic_media_play" android:alpha="0.1" android:tint="#FFF"/>
                           </FrameLayout>
                           <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.5" android:background="#1c142e" android:padding="25dp" android:orientation="vertical">
                               <TextView android:id="@+id/display_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="اختر محتوى" android:textColor="#ff9100" android:textSize="24sp" android:textStyle="bold"/>
-                              <TextView android:id="@+id/group_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="يرجى تحديد قناة أو فيلم لبدء المشاهدة." android:textColor="#aaa" android:textSize="15sp" android:layout_marginTop="10dp"/>
+                              <TextView android:id="@+id/group_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="يرجى التحديد لبدء المشاهدة." android:textColor="#aaa" android:textSize="15sp" android:layout_marginTop="10dp"/>
                           </LinearLayout>
                       </LinearLayout>
                       <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_items" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.28" android:background="#130d21"/>
@@ -71,27 +82,20 @@ jobs:
                       <TextView android:id="@+id/full_ch_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerHorizontal="true" android:layout_marginTop="30dp" android:textColor="#ff9100" android:textSize="28sp" android:textStyle="bold"/>
                       <LinearLayout android:id="@+id/vod_controls" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:layout_alignParentBottom="true" android:padding="50dp">
                           <SeekBar android:id="@+id/full_seekbar" android:layout_width="match_parent" android:layout_height="wrap_content" android:progressTint="#ff9100" android:thumbTint="#ff9100" android:focusable="true"/>
-                          <TextView android:id="@+id/txt_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#FFF" android:layout_gravity="center" android:layout_marginTop="15dp" android:textSize="18sp" android:textStyle="bold"/>
+                          <TextView android:id="@+id/txt_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#FFF" android:layout_gravity="center" android:layout_marginTop="15dp" android:textSize="18sp"/>
                       </LinearLayout>
                   </RelativeLayout>
               </FrameLayout>
           </RelativeLayout>
           EOF
 
-          cat <<EOF > app/src/main/res/drawable/focus_highlight.xml
-          <selector xmlns:android="http://schemas.android.com/apk/res/android">
-              <item android:state_focused="true"><shape><solid android:color="#2d2445"/><stroke android:width="2dp" android:color="#ff9100"/></shape></item>
-              <item><shape><solid android:color="@android:color/transparent"/></shape></item>
-          </selector>
-          EOF
-
           cat <<EOF > app/src/main/res/layout/item_channel.xml
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent" android:layout_height="wrap_content"
               android:orientation="horizontal" android:gravity="center_vertical" 
-              android:padding="12dp" android:focusable="true" android:clickable="true"
-              android:background="@drawable/focus_highlight" android:layoutDirection="rtl">
-              <ImageView android:id="@+id/img_logo" android:layout_width="35dp" android:layout_height="35dp" android:layout_marginLeft="12dp" android:background="#000" android:padding="2dp"/>
+              android:padding="10dp" android:focusable="true" android:clickable="true"
+              android:background="?android:attr/selectableItemBackground">
+              <ImageView android:id="@+id/img_logo" android:layout_width="35dp" android:layout_height="35dp" android:layout_marginLeft="10dp"/>
               <TextView android:id="@+id/txt_name" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#FFF" android:textSize="14sp" android:gravity="right"/>
           </LinearLayout>
           EOF
@@ -130,7 +134,7 @@ jobs:
           public class MainActivity extends AppCompatActivity {
               private ExoPlayer player;
               private Map<String, List<Ch>> live = new LinkedHashMap<>(), movie = new LinkedHashMap<>(), series = new LinkedHashMap<>();
-              private List<Ch> favList = new ArrayList<>(), currentItems = new ArrayList<>();
+              private List<Ch> favList = new ArrayList<>();
               private Ch currentCh;
               private RecyclerView rvG, rvI;
               private TextView tDisplay, tGroup, tTime, tFullChName;
@@ -138,8 +142,8 @@ jobs:
               private PlayerView smallPV, fullPV;
               private SeekBar seekBar;
               private String mode = "live";
-              private Handler handler = new Handler();
-              private long lastClickTime = 0;
+              private Handler handler = new Handler(Looper.getMainLooper());
+              private long lastClick = 0;
 
               static class Ch { String n, u, g, l; }
 
@@ -150,7 +154,7 @@ jobs:
                   
                   splash = findViewById(R.id.splash_screen);
                   mainUI = findViewById(R.id.main_ui_container);
-                  handler.postDelayed(() -> { splash.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE); }, 1500);
+                  handler.postDelayed(() -> { splash.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE); }, 2000);
 
                   player = new ExoPlayer.Builder(this).build();
                   smallPV = findViewById(R.id.small_player); fullPV = findViewById(R.id.full_player);
@@ -186,8 +190,8 @@ jobs:
                   player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play();
               }
 
-              private void toggleFull(boolean full) {
-                  if (full) {
+              private void toggleFull(boolean f) {
+                  if (f) {
                       mainUI.setVisibility(View.GONE); fullCont.setVisibility(View.VISIBLE);
                       PlayerView.switchTargetView(player, smallPV, fullPV); showOverlay();
                   } else {
@@ -198,24 +202,12 @@ jobs:
 
               private void setMode(String m) {
                   this.mode = m;
-                  updateTabs();
                   Map<String, List<Ch>> d = m.equals("movie") ? movie : (m.equals("series") ? series : live);
                   if (m.equals("fav")) {
-                      rvG.setAdapter(new GAdapter(Arrays.asList("المفضلة"), null));
+                      rvG.setAdapter(new GAdapter(Collections.singletonList("المفضلة"), null));
                       rvI.setAdapter(new IAdapter(favList));
                   } else {
-                      List<String> groups = new ArrayList<>(d.keySet());
-                      rvG.setAdapter(new GAdapter(groups, d));
-                  }
-              }
-
-              private void updateTabs() {
-                  int[] ids = {R.id.tab_live, R.id.tab_movie, R.id.tab_series, R.id.tab_fav};
-                  String[] modes = {"live", "movie", "series", "fav"};
-                  for(int i=0; i<4; i++) {
-                      TextView tv = findViewById(ids[i]);
-                      if(modes[i].equals(this.mode)) { tv.setTextColor(0xffff9100); tv.setAlpha(1.0f); }
-                      else { tv.setTextColor(0xffffffff); tv.setAlpha(0.5f); }
+                      rvG.setAdapter(new GAdapter(new ArrayList<>(d.keySet()), d));
                   }
               }
 
@@ -241,22 +233,25 @@ jobs:
               }
 
               class GAdapter extends RecyclerView.Adapter<GAdapter.VH> {
-                  List<String> g; Map<String, List<Ch>> d; GAdapter(List<String> g, Map<String, List<Ch>> d) { this.g = g; this.d = d; }
+                  List<String> g; Map<String, List<Ch>> d;
+                  GAdapter(List<String> g, Map<String, List<Ch>> d) { this.g = g; this.d = d; }
                   public VH onCreateViewHolder(ViewGroup p, int t) { 
-                      Button b = new Button(p.getContext()); b.setTextColor(-1); b.setFocusable(true);
-                      b.setBackgroundResource(R.drawable.focus_highlight); b.setAllCaps(false); return new VH(b); 
+                      Button b = new Button(p.getContext()); b.setTextColor(-1); b.setBackgroundColor(0x00000000); return new VH(b); 
                   }
-                  public void onBindViewHolder(VH h, int i) { h.b.setText(g.get(i)); h.b.setOnClickListener(v -> { if(d!=null) { currentItems = d.get(g.get(i)); rvI.setAdapter(new IAdapter(currentItems)); } }); }
+                  public void onBindViewHolder(VH h, int i) {
+                      ((Button)h.itemView).setText(g.get(i));
+                      h.itemView.setOnClickListener(v -> { if(d != null) rvI.setAdapter(new IAdapter(d.get(g.get(i)))); });
+                  }
                   public int getItemCount() { return g.size(); }
-                  class VH extends RecyclerView.ViewHolder { Button b; VH(View v) { super(v); b = (Button)v; } }
+                  class VH extends RecyclerView.ViewHolder { VH(View v) { super(v); } }
               }
 
               class IAdapter extends RecyclerView.Adapter<IAdapter.VH> {
                   List<Ch> items; IAdapter(List<Ch> i) { items = i; }
                   public VH onCreateViewHolder(ViewGroup p, int t) { return new VH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_channel, p, false)); }
                   public void onBindViewHolder(VH h, int i) {
-                      Ch c = items.get(i); h.n.setText(c.n); Glide.with(h.itemView).load(c.l).placeholder(android.R.drawable.ic_media_play).into(h.img);
-                      h.itemView.setOnClickListener(v -> { long time = System.currentTimeMillis(); if(time-lastClickTime < 400) toggleFull(true); else play(c); lastClickTime = time; });
+                      Ch c = items.get(i); h.n.setText(c.n); Glide.with(h.itemView).load(c.l).into(h.img);
+                      h.itemView.setOnClickListener(v -> { long now = System.currentTimeMillis(); if(now-lastClick < 500) toggleFull(true); else play(c); lastClick = now; });
                   }
                   public int getItemCount() { return items.size(); }
                   class VH extends RecyclerView.ViewHolder { TextView n; ImageView img; VH(View v) { super(v); n = v.findViewById(R.id.txt_name); img = v.findViewById(R.id.img_logo); } }
@@ -269,23 +264,27 @@ jobs:
               }
               private Runnable hideOverlay = () -> overlay.setVisibility(View.GONE);
               private void updateProgress() {
-                  if (player != null && player.isPlaying() && (mode.equals("movie") || mode.equals("series"))) {
+                  if (player != null && player.isPlaying() && !mode.equals("live")) {
                       long dur = player.getDuration(); long pos = player.getCurrentPosition();
                       if (dur > 0) { seekBar.setMax((int) dur); seekBar.setProgress((int) pos); tTime.setText(formatTime(pos) + " / " + formatTime(dur)); }
                   }
                   handler.postDelayed(this::updateProgress, 1000);
               }
-              private String formatTime(long ms) { long s = (ms/1000)%60, m = (ms/60000)%60, h = (ms/3600000); return h>0 ? String.format("%02d:%02d:%02d", h, m, s) : String.format("%02d:%02d", m, s); }
+              private String formatTime(long ms) { long s = (ms/1000)%60, m = (ms/60000)%60, h = (ms/3600000); return h>0 ? String.format("%d:%02d:%02d", h, m, s) : String.format("%02d:%02d", m, s); }
               private void loadFavs() { String j = getSharedPreferences("p", MODE_PRIVATE).getString("f", "[]"); favList = new Gson().fromJson(j, new TypeToken<List<Ch>>(){}.getType()); }
               private void toggleFav() { if(currentCh==null) return; boolean ex = false; for(int i=0; i<favList.size(); i++) if(favList.get(i).u.equals(currentCh.u)){ favList.remove(i); ex=true; break; } if(!ex) favList.add(currentCh); getSharedPreferences("p", MODE_PRIVATE).edit().putString("f", new Gson().toJson(favList)).apply(); Toast.makeText(this, ex?"تم الحذف":"تمت الإضافة", Toast.LENGTH_SHORT).show(); }
           }
           EOF
 
-          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:networkSecurityConfig="@xml/network_security_config" android:label="Rabie Pro Mirror"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape" android:configChanges="orientation|screenSize"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
-          
+          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:networkSecurityConfig="@xml/network_security_config" android:label="Rabie Pro"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape" android:configChanges="orientation|screenSize"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
+
+      - name: Build_APK
+        run: |
+          # توليد ملفات Gradle الضرورية
+          gradle wrapper --gradle-version 8.5
           chmod +x gradlew
           ./gradlew :app:assembleDebug --no-daemon
 
       - name: Upload_APK
         uses: actions/upload-artifact@v4
-        with: { name: Rabie_Pro_HTML_Mirror, path: app/build/outputs/apk/debug/*.apk }
+        with: { name: Rabie_Pro_V17_Final_Fix, path: app/build/outputs/apk/debug/*.apk }
