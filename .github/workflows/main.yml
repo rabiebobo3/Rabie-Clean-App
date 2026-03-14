@@ -1,4 +1,4 @@
-name: Rabie_Pro_V30_Final_UI
+name: Rabie_Pro_V31_Stable_Build
 on: [push]
 jobs:
   build:
@@ -8,7 +8,7 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_V30_Final
+      - name: Build_V31_Final
         run: |
           rm -rf app settings.gradle build.gradle gradle.properties .gradle
           echo "android.useAndroidX=true" > gradle.properties
@@ -81,9 +81,9 @@ jobs:
                           <TextView android:id="@+id/txt_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="00:00 / 00:00" android:textColor="#FFF" android:layout_marginTop="5dp"/>
                           
                           <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:layout_marginTop="10dp">
-                              <ImageButton android:id="@+id/btn_rew" android:layout_width="50dp" android:layout_height="50dp" android:src="@android:drawable/ic_media_rew" android:background="@drawable/round_btn" android:tint="#FFF" android:layout_margin="10dp" android:focusable="true"/>
-                              <ImageButton android:id="@+id/btn_play_pause" android:layout_width="65dp" android:layout_height="65dp" android:src="@android:drawable/ic_media_pause" android:background="@drawable/round_btn_orange" android:tint="#000" android:layout_margin="10dp" android:focusable="true"/>
-                              <ImageButton android:id="@+id/btn_ffwd" android:layout_width="50dp" android:layout_height="50dp" android:src="@android:drawable/ic_media_ff" android:background="@drawable/round_btn" android:tint="#FFF" android:layout_margin="10dp" android:focusable="true"/>
+                              <ImageButton android:id="@+id/btn_rew" android:layout_width="50dp" android:layout_height="50dp" android:src="@android:drawable/ic_media_rew" android:background="@drawable/round_btn" android:layout_margin="10dp" android:focusable="true"/>
+                              <ImageButton android:id="@+id/btn_play_pause" android:layout_width="65dp" android:layout_height="65dp" android:src="@android:drawable/ic_media_pause" android:background="@drawable/round_btn_orange" android:layout_margin="10dp" android:focusable="true"/>
+                              <ImageButton android:id="@+id/btn_ffwd" android:layout_width="50dp" android:layout_height="50dp" android:src="@android:drawable/ic_media_ff" android:background="@drawable/round_btn" android:layout_margin="10dp" android:focusable="true"/>
                           </LinearLayout>
                       </LinearLayout>
                   </RelativeLayout>
@@ -126,7 +126,7 @@ jobs:
 
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' version '8.2.2' }
-          android { namespace 'com.rabie.iptv'; compileSdk 34; defaultConfig { applicationId "com.rabie.iptv"; minSdk 21; targetSdk 34; versionCode 30; versionName "30.0" } }
+          android { namespace 'com.rabie.iptv'; compileSdk 34; defaultConfig { applicationId "com.rabie.iptv"; minSdk 21; targetSdk 34; versionCode 31; versionName "31.0" } }
           dependencies { 
               implementation 'androidx.appcompat:appcompat:1.6.1'
               implementation 'androidx.media3:media3-exoplayer:1.2.1'
@@ -184,7 +184,7 @@ jobs:
                   hideSystemUI();
 
                   splash = findViewById(R.id.splash_screen); mainUI = findViewById(R.id.main_ui_container);
-                  handler.postDelayed(() -> { splash.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE); }, 2000);
+                  handler.postDelayed(new Runnable() { public void run() { splash.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE); } }, 2000);
 
                   player = new ExoPlayer.Builder(this).build();
                   smallPV = findViewById(R.id.small_player); fullPV = findViewById(R.id.full_player);
@@ -196,25 +196,25 @@ jobs:
 
                   smallPV.setPlayer(player);
                   player.addListener(new Player.Listener() {
-                      @Override public void onPlaybackStateChanged(int s) {
+                      public void onPlaybackStateChanged(int s) {
                           int v = (s == Player.STATE_BUFFERING) ? View.VISIBLE : View.GONE;
                           ps.setVisibility(v); pf.setVisibility(v);
                       }
-                      @Override public void onIsPlayingChanged(boolean playing) {
+                      public void onIsPlayingChanged(boolean playing) {
                           btnPP.setImageResource(playing ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
                       }
                   });
 
                   seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                      @Override public void onProgressChanged(SeekBar sb, int p, boolean f) { if(f) player.seekTo(p); }
-                      @Override public void onStartTrackingTouch(SeekBar sb) {}
-                      @Override public void onStopTrackingTouch(SeekBar sb) {}
+                      public void onProgressChanged(SeekBar sb, int p, boolean f) { if(f) player.seekTo(p); }
+                      public void onStartTrackingTouch(SeekBar sb) {}
+                      public void onStopTrackingTouch(SeekBar sb) {}
                   });
 
-                  fullCont.setOnClickListener(v -> showOverlay());
-                  btnPP.setOnClickListener(v -> { if(player.isPlaying()) player.pause(); else player.play(); });
-                  findViewById(R.id.btn_rew).setOnClickListener(v -> player.seekTo(player.getCurrentPosition() - 15000));
-                  findViewById(R.id.btn_ffwd).setOnClickListener(v -> player.seekTo(player.getCurrentPosition() + 15000));
+                  fullCont.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { showOverlay(); } });
+                  btnPP.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { if(player.isPlaying()) player.pause(); else player.play(); } });
+                  findViewById(R.id.btn_rew).setOnClickListener(new View.OnClickListener() { public void onClick(View v) { player.seekTo(player.getCurrentPosition() - 15000); } });
+                  findViewById(R.id.btn_ffwd).setOnClickListener(new View.OnClickListener() { public void onClick(View v) { player.seekTo(player.getCurrentPosition() + 15000); } });
 
                   rvG = findViewById(R.id.rv_groups); rvI = findViewById(R.id.rv_items);
                   tTitle = findViewById(R.id.txt_title);
@@ -225,14 +225,14 @@ jobs:
                   updateProgress();
 
                   getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
-                      @Override public void handleOnBackPressed() { if (fullCont.getVisibility() == View.VISIBLE) toggleFull(false); else finish(); }
+                      public void handleOnBackPressed() { if (fullCont.getVisibility() == View.VISIBLE) toggleFull(false); else finish(); }
                   });
 
-                  findViewById(R.id.tab_live).setOnClickListener(v -> setMode("live"));
-                  findViewById(R.id.tab_movie).setOnClickListener(v -> setMode("movie"));
-                  findViewById(R.id.tab_series).setOnClickListener(v -> setMode("series"));
-                  findViewById(R.id.tab_fav).setOnClickListener(v -> setMode("fav"));
-                  findViewById(R.id.btn_toggle_fav).setOnClickListener(v -> toggleFav());
+                  findViewById(R.id.tab_live).setOnClickListener(new View.OnClickListener() { public void onClick(View v) { setMode("live"); } });
+                  findViewById(R.id.tab_movie).setOnClickListener(new View.OnClickListener() { public void onClick(View v) { setMode("movie"); } });
+                  findViewById(R.id.tab_series).setOnClickListener(new View.OnClickListener() { public void onClick(View v) { setMode("series"); } });
+                  findViewById(R.id.tab_fav).setOnClickListener(new View.OnClickListener() { public void onClick(View v) { setMode("fav"); } });
+                  findViewById(R.id.btn_toggle_fav).setOnClickListener(new View.OnClickListener() { public void onClick(View v) { toggleFav(); } });
               }
 
               private void toggleFull(boolean full) {
@@ -252,14 +252,14 @@ jobs:
                   vodControls.setVisibility(currentMode.equals("live") ? View.GONE : View.VISIBLE);
                   handler.removeCallbacks(hideOverlay); handler.postDelayed(hideOverlay, 5000);
               }
-              private Runnable hideOverlay = () -> overlay.setVisibility(View.GONE);
+              private Runnable hideOverlay = new Runnable() { public void run() { overlay.setVisibility(View.GONE); } };
 
               private void updateProgress() {
                   if (player != null && !currentMode.equals("live")) {
                       long dur = player.getDuration(); long pos = player.getCurrentPosition();
                       if (dur > 0) { seekBar.setMax((int) dur); seekBar.setProgress((int) pos); tTime.setText(formatTime(pos) + " / " + formatTime(dur)); }
                   }
-                  handler.postDelayed(this::updateProgress, 1000);
+                  handler.postDelayed(new Runnable() { public void run() { updateProgress(); } }, 1000);
               }
               private String formatTime(long ms) { long s = (ms/1000)%60, m = (ms/60000)%60, h = (ms/3600000); return h>0 ? String.format("%02d:%02d:%02d",h,m,s) : String.format("%02d:%02d",m,s); }
 
@@ -287,7 +287,7 @@ jobs:
                   List<String> g; Map<String, List<Ch>> d; Map<String, Map<String, List<Ch>>> s;
                   GroupAdapter(List<String> g, Map<String, List<Ch>> d, Map<String, Map<String, List<Ch>>> s) { this.g = g; this.d = d; this.s = s; }
                   public VH onCreateViewHolder(ViewGroup p, int t) { Button b = new Button(p.getContext()); b.setTextColor(-1); b.setAllCaps(false); b.setBackgroundResource(R.drawable.focus_highlight); b.setFocusable(true); b.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL); b.setPadding(0,8,35,8); return new VH(b); }
-                  public void onBindViewHolder(VH h, int i) { h.b.setText(g.get(i)); h.b.setOnClickListener(v -> { if (currentMode.equals("series")) loadSeasons(g.get(i)); else if (d != null) { currentItems = d.get(g.get(i)); rvI.setAdapter(new ItemAdapter(currentItems)); } }); }
+                  public void onBindViewHolder(VH h, int i) { final int pos = i; h.b.setText(g.get(pos)); h.b.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { if (currentMode.equals("series")) loadSeasons(g.get(pos)); else if (d != null) { currentItems = d.get(g.get(pos)); rvI.setAdapter(new ItemAdapter(currentItems)); } } }); }
                   public int getItemCount() { return g.size(); }
                   class VH extends RecyclerView.ViewHolder { Button b; VH(View v) { super(v); b = (Button)v; } }
               }
@@ -296,24 +296,23 @@ jobs:
                   List<Ch> items; ItemAdapter(List<Ch> i) { items = i; }
                   public VH onCreateViewHolder(ViewGroup p, int t) { return new VH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_channel, p, false)); }
                   public void onBindViewHolder(VH h, int i) {
-                      Ch c = items.get(i); h.n.setText(c.n); Glide.with(h.itemView).load(c.l).into(h.img);
-                      h.itemView.setOnClickListener(v -> {
+                      final int pos = i; final Ch c = items.get(pos); h.n.setText(c.n); Glide.with(h.itemView).load(c.l).into(h.img);
+                      h.itemView.setOnClickListener(new View.OnClickListener() { public void onClick(View v) {
                           if ("SEASON_TYPE".equals(c.g)) loadEpisodes(c.u, c.n);
                           else if ("BACK_TYPE".equals(c.g)) loadSeasons(c.u);
-                          else { long t = System.currentTimeMillis(); if (t - lastClickTime < 400) toggleFull(true); else { currentCh = c; currentChIndex = i; tTitle.setText(c.n); player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play(); } lastClickTime = t; }
-                      });
+                          else { long t = System.currentTimeMillis(); if (t - lastClickTime < 400) toggleFull(true); else { currentCh = c; currentChIndex = pos; tTitle.setText(c.n); player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play(); } lastClickTime = t; }
+                      } });
                   }
                   public int getItemCount() { return items.size(); }
                   class VH extends RecyclerView.ViewHolder { TextView n; ImageView img; VH(View v) { super(v); n = v.findViewById(R.id.txt_name); img = v.findViewById(R.id.img_logo); } }
               }
 
               private void hideSystemUI() { getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN); }
-              private void loadData() { String url = "https://gist.githubusercontent.com/rabiebobo3/d498347610d7312b3e9be88093117620/raw/list.m3u"; Volley.newRequestQueue(this).add(new StringRequest(url, res -> { parse(res); setMode("live"); }, null)); }
+              private void loadData() { String url = "https://gist.githubusercontent.com/rabiebobo3/d498347610d7312b3e9be88093117620/raw/list.m3u"; Volley.newRequestQueue(this).add(new StringRequest(url, new Response.Listener<String>() { public void onResponse(String res) { parse(res); setMode("live"); } }, null)); }
               private void loadFavs() { String j = getSharedPreferences("p", MODE_PRIVATE).getString("f", "[]"); favList = new Gson().fromJson(j, new TypeToken<List<Ch>>(){}.getType()); }
               private void toggleFav() { if (currentCh == null) return; boolean exists = false; for (int i=0; i<favList.size(); i++) if(favList.get(i).u.equals(currentCh.u)) { favList.remove(i); exists=true; break; } if (!exists) favList.add(currentCh); getSharedPreferences("p", MODE_PRIVATE).edit().putString("f", new Gson().toJson(favList)).apply(); }
               private void parse(String text) {
                   String[] lines = text.split("\n"); Ch cur = null; 
-                  Pattern p = Pattern.compile("S(\\d+)|Season\\s*(\\d+)", Pattern.CASE_INSENSITIVE);
                   for (String l : lines) {
                       if (l.contains("#EXTINF:")) { 
                           cur = new Ch(); 
@@ -322,23 +321,23 @@ jobs:
                           cur.l = l.contains("tvg-logo=\"") ? l.split("tvg-logo=\"")[1].split("\"")[0] : ""; 
                       } else if (l.startsWith("http") && cur != null) {
                           cur.u = l.trim(); String g = cur.g.toLowerCase();
-                          if (g.contains("movie") || g.contains("افلام")) { if (!movie.containsKey(cur.g)) movie.put(cur.g, new ArrayList<>()); movie.get(cur.g).add(cur); }
-                          else if (g.contains("series") || g.contains("مسلسل")) { if (!series.containsKey(cur.g)) series.put(cur.g, new LinkedHashMap<>()); Matcher m = p.matcher(cur.n); String ssn = m.find() ? m.group() : "الموسم 1"; if (!series.get(cur.g).containsKey(ssn)) series.get(cur.g).put(ssn, new ArrayList<>()); series.get(cur.g).get(ssn).add(cur); }
-                          else { if (!live.containsKey(cur.g)) live.put(cur.g, new ArrayList<>()); live.get(cur.g).add(cur); }
+                          if (g.contains("movie") || g.contains("افلام")) { if (!movie.containsKey(cur.g)) movie.put(cur.g, new ArrayList<Ch>()); movie.get(cur.g).add(cur); }
+                          else if (g.contains("series") || g.contains("مسلسل")) { if (!series.containsKey(cur.g)) series.put(cur.g, new LinkedHashMap<String, List<Ch>>()); String ssn = "Season 1"; if (!series.get(cur.g).containsKey(ssn)) series.get(cur.g).put(ssn, new ArrayList<Ch>()); series.get(cur.g).get(ssn).add(cur); }
+                          else { if (!live.containsKey(cur.g)) live.put(cur.g, new ArrayList<Ch>()); live.get(cur.g).add(cur); }
                           cur = null;
                       }
                   }
               }
-              @Override protected void onStop() { super.onStop(); if(player != null) player.release(); finish(); }
+              protected void onStop() { super.onStop(); if(player != null) player.release(); finish(); }
           }
           EOF
 
-          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:networkSecurityConfig="@xml/network_security_config" android:label="Rabie Pro V30" android:icon="@android:drawable/btn_star"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape" android:configChanges="orientation|screenSize"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/><category android:name="android.intent.category.LEANBACK_LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
+          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:networkSecurityConfig="@xml/network_security_config" android:label="Rabie Pro V31" android:icon="@android:drawable/btn_star"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape" android:configChanges="orientation|screenSize"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/><category android:name="android.intent.category.LEANBACK_LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
           
           gradle wrapper --gradle-version 8.5
           chmod +x gradlew
           ./gradlew :app:assembleDebug --no-daemon
 
-      - name: UI_V30_Upload
+      - name: UI_V31_Upload
         uses: actions/upload-artifact@v4
-        with: { name: Rabie_Pro_V30_Final_UI, path: app/build/outputs/apk/debug/*.apk }
+        with: { name: Rabie_Pro_V31_Final, path: app/build/outputs/apk/debug/*.apk }
