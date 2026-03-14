@@ -1,4 +1,4 @@
-name: Rabie_Pro_V17_Smart_Nav
+name: Rabie_Pro_V17_Smart_Final
 on: [push]
 jobs:
   build:
@@ -8,19 +8,15 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_V17_Smart
+      - name: Build_V17_Final
         run: |
           rm -rf app settings.gradle build.gradle gradle.properties .gradle
           echo "android.useAndroidX=true" > gradle.properties
-          
           echo "pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }; dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }; include ':app'" > settings.gradle
 
           mkdir -p app/src/main/java/com/rabie/iptv app/src/main/res/layout app/src/main/res/drawable app/src/main/res/xml
 
-          # ملف حماية الشبكة
-          echo '<?xml version="1.0" encoding="utf-8"?><network-security-config><base-config cleartextTrafficPermitted="true"/></network-security-config>' > app/src/main/res/xml/network_security_config.xml
-
-          # التصميم الأساسي (كل حاجة في بلاصتها)
+          # واجهة المستخدم (كل شيء في مكانه الصحيح)
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -29,40 +25,40 @@ jobs:
               android:background="#0a0714" android:layoutDirection="rtl">
               
               <LinearLayout android:id="@+id/main_ui_container" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
-                  <LinearLayout android:layout_width="match_parent" android:layout_height="50dp" android:background="#000" android:gravity="center_vertical" android:paddingHorizontal="15dp">
-                      <EditText android:id="@+id/search_bar" android:layout_width="180dp" android:layout_height="35dp" android:hint="بحث عن قناة..." android:textColor="#FFF" android:background="#1c142e" android:paddingHorizontal="10dp" android:textSize="13sp" android:fontFamily="sans-serif-light"/>
+                  <LinearLayout android:layout_width="match_parent" android:layout_height="55dp" android:background="#000" android:gravity="center_vertical" android:paddingHorizontal="15dp">
+                      <EditText android:id="@+id/search_bar" android:layout_width="160dp" android:layout_height="35dp" android:hint="بحث..." android:textColor="#FFF" android:background="#1c142e" android:paddingHorizontal="10dp" android:textSize="13sp" android:fontFamily="sans-serif-light"/>
                       <View android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"/>
                       <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE PRO" android:textColor="#ff9100" android:textSize="18sp" android:fontFamily="sans-serif-medium"/>
                   </LinearLayout>
 
                   <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal">
                       <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.5" android:orientation="vertical">
-                          <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.6">
+                          <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.65">
                               <androidx.media3.ui.PlayerView android:id="@+id/small_player" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#000" app:use_controller="false"/>
-                              <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE PRO" android:textColor="#44ff9100" android:textSize="12sp" android:layout_gravity="top|left" android:layout_margin="10dp" android:fontFamily="sans-serif-light"/>
+                              <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE PRO" android:textColor="#33ff9100" android:textSize="10sp" android:layout_margin="5dp" android:fontFamily="sans-serif-light"/>
                           </FrameLayout>
-                          <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.4" android:padding="15dp" android:background="#130d21" android:orientation="vertical">
-                              <TextView android:id="@+id/txt_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="اسم القناة" android:textColor="#ff9100" android:textSize="18sp" android:fontFamily="sans-serif-light"/>
-                              <Button android:id="@+id/btn_fav" android:layout_width="wrap_content" android:layout_height="35dp" android:text="⭐ المفضلة" android:backgroundTint="#2d2445" android:layout_marginTop="10dp" android:textSize="10sp"/>
+                          <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.35" android:padding="15dp" android:background="#130d21" android:orientation="vertical">
+                              <TextView android:id="@+id/txt_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="اسم القناة" android:textColor="#ff9100" android:textSize="20sp" android:fontFamily="sans-serif-light"/>
+                              <Button android:id="@+id/btn_fav" android:layout_width="wrap_content" android:layout_height="35dp" android:text="⭐ مفضلة" android:backgroundTint="#2d2445" android:layout_marginTop="10dp" android:textSize="10sp"/>
                           </LinearLayout>
                       </LinearLayout>
 
-                      <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_items" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.28" android:background="#18112b"/>
+                      <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_items" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.28" android:background="#1a1429"/>
 
-                      <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.22" android:orientation="vertical" android:background="#1c142e">
+                      <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.22" android:orientation="vertical" android:background="#130d21">
                           <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="5dp">
-                              <Button android:id="@+id/tab_live" android:layout_width="match_parent" android:layout_height="38dp" android:text="القنوات المباشرة" android:backgroundTint="#ff9100" android:textSize="11sp" android:layout_marginBottom="2dp"/>
-                              <Button android:id="@+id/tab_movie" android:layout_width="match_parent" android:layout_height="38dp" android:text="أفلام" android:backgroundTint="#2d2445" android:textSize="11sp" android:layout_marginBottom="2dp"/>
-                              <Button android:id="@+id/tab_series" android:layout_width="match_parent" android:layout_height="38dp" android:text="مسلسلات" android:backgroundTint="#2d2445" android:textSize="11sp"/>
+                              <Button android:id="@+id/tab_live" android:layout_width="match_parent" android:layout_height="35dp" android:text="القنوات" android:backgroundTint="#ff9100" android:textSize="11sp" android:layout_marginBottom="2dp"/>
+                              <Button android:id="@+id/tab_movie" android:layout_width="match_parent" android:layout_height="35dp" android:text="الأفلام" android:backgroundTint="#1c142e" android:textSize="11sp" android:layout_marginBottom="2dp"/>
+                              <Button android:id="@+id/tab_series" android:layout_width="match_parent" android:layout_height="35dp" android:text="المسلسلات" android:backgroundTint="#1c142e" android:textSize="11sp"/>
                           </LinearLayout>
-                          <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_groups" android:layout_width="match_parent" android:layout_height="match_parent"/>
+                          <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_groups" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#1c142e"/>
                       </LinearLayout>
                   </LinearLayout>
               </LinearLayout>
 
               <FrameLayout android:id="@+id/full_container" android:layout_width="match_parent" android:layout_height="match_parent" android:visibility="gone" android:background="#000">
                   <androidx.media3.ui.PlayerView android:id="@+id/full_player" android:layout_width="match_parent" android:layout_height="match_parent" app:use_controller="false" />
-                  <RelativeLayout android:id="@+id/vod_overlay" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#80000000" android:visibility="gone">
+                  <RelativeLayout android:id="@+id/vod_overlay" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#90000000" android:visibility="gone">
                       <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:layout_alignParentBottom="true" android:padding="30dp">
                           <SeekBar android:id="@+id/vod_seekbar" android:layout_width="match_parent" android:layout_height="wrap_content" android:progressTint="#ff9100" android:thumbTint="#ff9100"/>
                           <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:layout_marginTop="10dp">
@@ -76,12 +72,10 @@ jobs:
           </RelativeLayout>
           EOF
 
-          # تصميم عنصر القناة الرقيق
           cat <<EOF > app/src/main/res/layout/item_channel.xml
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent" android:layout_height="wrap_content"
-              android:padding="12dp" android:gravity="center_vertical" android:focusable="true"
-              android:background="?android:attr/selectableItemBackground" android:layoutDirection="rtl">
+              android:padding="12dp" android:gravity="center_vertical" android:background="?android:attr/selectableItemBackground">
               <ImageView android:id="@+id/img_logo" android:layout_width="32dp" android:layout_height="32dp" android:layout_marginLeft="12dp"/>
               <TextView android:id="@+id/txt_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#FFF" android:textSize="14sp" android:fontFamily="sans-serif-light"/>
           </LinearLayout>
@@ -100,7 +94,6 @@ jobs:
           }
           EOF
 
-          # كود الجافا مع خاصية الرجوع الذكي وشريط التمرير
           cat <<EOF > app/src/main/java/com/rabie/iptv/MainActivity.java
           package com.rabie.iptv;
           import android.os.*;
@@ -123,7 +116,6 @@ jobs:
               private SeekBar seekBar;
               private String currentMode = "live";
               private Handler handler = new Handler();
-              private long lastClick = 0;
 
               static class Ch { String n, u, g, l; }
 
@@ -145,45 +137,38 @@ jobs:
                   rvI.setLayoutManager(new LinearLayoutManager(this));
 
                   loadData();
-                  setupVODControls();
+                  setupVOD();
 
                   findViewById(R.id.tab_live).setOnClickListener(v -> setMode("live"));
                   findViewById(R.id.tab_movie).setOnClickListener(v -> setMode("movie"));
                   findViewById(R.id.tab_series).setOnClickListener(v -> setMode("series"));
               }
 
-              private void setupVODControls() {
+              private void setupVOD() {
                   findViewById(R.id.btn_rew).setOnClickListener(v -> player.seekTo(player.getCurrentPosition() - 10000));
                   findViewById(R.id.btn_ff).setOnClickListener(v -> player.seekTo(player.getCurrentPosition() + 10000));
                   findViewById(R.id.btn_play).setOnClickListener(v -> {
                       if (player.isPlaying()) { player.pause(); ((Button)v).setText("▶"); }
                       else { player.play(); ((Button)v).setText("⏸"); }
                   });
-                  updateProgress();
+                  updateProg();
               }
 
-              private void updateProgress() {
+              private void updateProg() {
                   if (player != null && (currentMode.equals("movie") || currentMode.equals("series"))) {
                       seekBar.setMax((int)player.getDuration());
                       seekBar.setProgress((int)player.getCurrentPosition());
                   }
-                  handler.postDelayed(this::updateProgress, 1000);
-              }
-
-              private void toggleFull(boolean full) {
-                  if (full) {
-                      mainUI.setVisibility(View.GONE); fullCont.setVisibility(View.VISIBLE);
-                      if (!currentMode.equals("live")) vodOverlay.setVisibility(View.VISIBLE);
-                  } else {
-                      fullCont.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE);
-                      vodOverlay.setVisibility(View.GONE);
-                  }
+                  handler.postDelayed(this::updateProg, 1000);
               }
 
               @Override
               public void onBackPressed() {
-                  if (fullCont.getVisibility() == View.VISIBLE) toggleFull(false);
-                  else super.onBackPressed();
+                  if (fullCont.getVisibility() == View.VISIBLE) {
+                      fullCont.setVisibility(View.GONE);
+                      mainUI.setVisibility(View.VISIBLE);
+                      vodOverlay.setVisibility(View.GONE);
+                  } else super.onBackPressed();
               }
 
               private void setMode(String m) {
@@ -237,9 +222,13 @@ jobs:
                       Ch c = items.get(i); ((TextView)h.itemView.findViewById(R.id.txt_name)).setText(c.n);
                       Glide.with(h.itemView).load(c.l).into((ImageView)h.itemView.findViewById(R.id.img_logo));
                       h.itemView.setOnClickListener(v -> {
-                          if (System.currentTimeMillis() - lastClick < 500) toggleFull(true);
-                          else { player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play(); ((TextView)findViewById(R.id.txt_title)).setText(c.n); }
-                          lastClick = System.currentTimeMillis();
+                          player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play();
+                          ((TextView)findViewById(R.id.txt_title)).setText(c.n);
+                      });
+                      h.itemView.setOnLongClickListener(v -> {
+                          mainUI.setVisibility(View.GONE); fullCont.setVisibility(View.VISIBLE);
+                          if (!currentMode.equals("live")) vodOverlay.setVisibility(View.VISIBLE);
+                          return true;
                       });
                   }
                   public int getItemCount() { return items.size(); }
@@ -247,12 +236,12 @@ jobs:
           }
           EOF
 
-          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:networkSecurityConfig="@xml/network_security_config" android:label="Rabie Pro Smart"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
+          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:label="Rabie Pro V17 Final"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
 
           gradle wrapper --gradle-version 8.5
           chmod +x gradlew
           ./gradlew :app:assembleDebug --no-daemon
 
-      - name: Success_Upload
+      - name: Final_Upload
         uses: actions/upload-artifact@v4
-        with: { name: Rabie_Pro_V17_Smart, path: app/build/outputs/apk/debug/*.apk }
+        with: { name: Rabie_Pro_V17_Final_Fix, path: app/build/outputs/apk/debug/*.apk }
