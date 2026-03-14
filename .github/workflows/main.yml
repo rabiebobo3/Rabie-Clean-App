@@ -1,4 +1,4 @@
-name: Rabie_Pro_V26_Quick_Switch
+name: Rabie_Pro_V27_AntiFreeze_Engine
 on: [push]
 jobs:
   build:
@@ -8,7 +8,7 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_V26
+      - name: Build_V27
         run: |
           rm -rf app settings.gradle build.gradle gradle.properties .gradle
           echo "android.useAndroidX=true" > gradle.properties
@@ -27,12 +27,13 @@ jobs:
           mkdir -p app/src/main/res/drawable
           mkdir -p app/src/main/res/xml
 
+          # ملف حماية الشبكة للسماح بجميع الروابط
           cat <<EOF > app/src/main/res/xml/network_security_config.xml
           <?xml version="1.0" encoding="utf-8"?>
           <network-security-config><base-config cleartextTrafficPermitted="true"/></network-security-config>
           EOF
 
-          # تصميم الواجهة الرئيسية
+          # تصميم الواجهة الرئيسية (مع الحفاظ على تحكم الريموت)
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -42,7 +43,7 @@ jobs:
               
               <LinearLayout android:id="@+id/main_ui_container" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
                   <LinearLayout android:layout_width="match_parent" android:layout_height="60dp" android:background="#000" android:gravity="center_vertical" android:padding="8dp">
-                      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE PRO" android:textColor="#ff9100" android:textStyle="bold" android:textSize="18sp" android:layout_marginRight="15dp"/>
+                      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE PRO V27" android:textColor="#ff9100" android:textStyle="bold" android:textSize="18sp" android:layout_marginRight="15dp"/>
                       <View android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"/>
                       <Button android:id="@+id/tab_live" android:layout_width="wrap_content" android:layout_height="38dp" android:text="القنوات" android:textColor="#CCC" android:textSize="12sp" android:layout_marginLeft="6dp" android:focusable="true" android:background="@drawable/tab_button_style"/>
                       <Button android:id="@+id/tab_movie" android:layout_width="wrap_content" android:layout_height="38dp" android:text="الأفلام" android:textColor="#CCC" android:textSize="12sp" android:layout_marginLeft="6dp" android:focusable="true" android:background="@drawable/tab_button_style"/>
@@ -112,13 +113,13 @@ jobs:
 
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' version '8.2.2' }
-          android { namespace 'com.rabie.iptv'; compileSdk 34; defaultConfig { applicationId "com.rabie.iptv"; minSdk 21; targetSdk 34; versionCode 26; versionName "26.0" } }
+          android { namespace 'com.rabie.iptv'; compileSdk 34; defaultConfig { applicationId "com.rabie.iptv"; minSdk 21; targetSdk 34; versionCode 27; versionName "27.0" } }
           dependencies { 
               implementation 'androidx.appcompat:appcompat:1.6.1'
               implementation 'androidx.media3:media3-exoplayer:1.2.1'
               implementation 'androidx.media3:media3-ui:1.2.1'
               implementation 'androidx.media3:media3-exoplayer-hls:1.2.1'
-              implementation 'androidx.media3:media3-datasource:1.2.1'
+              implementation 'androidx.media3:media3-datasource-okhttp:1.2.1'
               implementation 'androidx.recyclerview:recyclerview:1.3.0'
               implementation 'com.android.volley:volley:1.2.1'
               implementation 'com.google.code.gson:gson:2.10.1'
@@ -135,7 +136,6 @@ jobs:
           import androidx.appcompat.app.AppCompatActivity;
           import androidx.media3.common.*;
           import androidx.media3.exoplayer.*;
-          import androidx.media3.datasource.*;
           import androidx.media3.ui.PlayerView;
           import androidx.recyclerview.widget.*;
           import com.android.volley.toolbox.*;
@@ -161,7 +161,7 @@ jobs:
               private String currentMode = "live";
               private Handler handler = new Handler();
               private long lastClickTime = 0;
-              private int retryCount = 0;
+              private int retryAttempt = 0;
 
               static class Ch { String n, u, g, l; }
 
@@ -171,7 +171,7 @@ jobs:
                   setContentView(R.layout.activity_main);
                   hideSystemUI();
 
-                  initExoPlayer();
+                  initSmartPlayer();
                   
                   mainUI = findViewById(R.id.main_ui_container);
                   smallPV = findViewById(R.id.small_player); fullPV = findViewById(R.id.full_player);
@@ -212,24 +212,42 @@ jobs:
                   updateProgress();
               }
 
-              private void initExoPlayer() {
+              private void initSmartPlayer() {
+                  // إعدادات البافر بأسلوب VLC المطور
                   DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
-                          .setBufferDurationsMs(15000, 50000, 2500, 5000).build();
-                  player = new ExoPlayer.Builder(this).setLoadControl(loadControl).build();
+                          .setBufferDurationsMs(20000, 60000, 2500, 5000) // تخزين 20 ثانية قبل البدء
+                          .setBackBuffer(30000, true) // الاحتفاظ بـ 30 ثانية من الماضي للتعافي السريع
+                          .build();
+
+                  player = new ExoPlayer.Builder(this)
+                          .setLoadControl(loadControl)
+                          .build();
+
                   player.addListener(new Player.Listener() {
                       @Override public void onPlaybackStateChanged(int s) {
                           int v = (s == Player.STATE_BUFFERING) ? View.VISIBLE : View.GONE;
                           ps.setVisibility(v); pf.setVisibility(v);
+                          if (s == Player.STATE_READY) retryAttempt = 0;
                       }
+
                       @Override public void onPlayerError(PlaybackException error) {
-                          if (retryCount < 3) { retryCount++; player.prepare(); player.play(); }
+                          // دالة التعافي الذكي: التحميل من نفس الثانية عند الانقطاع
+                          if (retryAttempt < 10) { 
+                              retryAttempt++;
+                              long lastPos = player.getCurrentPosition();
+                              handler.postDelayed(() -> {
+                                  player.prepare();
+                                  player.seekTo(lastPos);
+                                  player.play();
+                              }, 2000); // محاولة كل ثانيتين
+                          }
                       }
                   });
               }
 
               private void playChannel(Ch c, int index) {
                   currentCh = c; currentChIndex = index;
-                  tTitle.setText(c.n); retryCount = 0;
+                  tTitle.setText(c.n); retryAttempt = 0;
                   player.setMediaItem(MediaItem.fromUri(c.u));
                   player.prepare(); player.play();
                   if (fullCont.getVisibility() == View.VISIBLE) showOverlay();
@@ -239,20 +257,13 @@ jobs:
               public boolean dispatchKeyEvent(KeyEvent event) {
                   if (event.getAction() == KeyEvent.ACTION_DOWN && fullCont.getVisibility() == View.VISIBLE) {
                       int code = event.getKeyCode();
-                      // التبديل بين القنوات بالسهم فوق وتحت
                       if (code == KeyEvent.KEYCODE_DPAD_UP) { if (currentChIndex > 0) playChannel(currentItems.get(currentChIndex - 1), currentChIndex - 1); return true; }
                       if (code == KeyEvent.KEYCODE_DPAD_DOWN) { if (currentChIndex < currentItems.size() - 1) playChannel(currentItems.get(currentChIndex + 1), currentChIndex + 1); return true; }
-                      
-                      // التحكم في VOD
                       if (!currentMode.equals("live")) {
                           if (code == KeyEvent.KEYCODE_DPAD_LEFT) { seek(-15000); return true; }
                           if (code == KeyEvent.KEYCODE_DPAD_RIGHT) { seek(15000); return true; }
                       }
-                      
-                      // إظهار الواجهة عند ضغط OK
                       if (code == KeyEvent.KEYCODE_DPAD_CENTER || code == KeyEvent.KEYCODE_ENTER) { showOverlay(); return true; }
-                      
-                      // العودة المباشرة للقائمة بزر Back
                       if (code == KeyEvent.KEYCODE_BACK) { toggleFull(false); return true; }
                   }
                   return super.dispatchKeyEvent(event);
@@ -266,7 +277,7 @@ jobs:
                   } else {
                       fullCont.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE);
                       PlayerView.switchTargetView(player, fullPV, smallPV);
-                      rvI.requestFocus(); // العودة للتركيز على قائمة القنوات
+                      rvI.requestFocus();
                   }
               }
 
@@ -326,12 +337,7 @@ jobs:
                       h.itemView.setOnClickListener(v -> {
                           if ("SEASON_TYPE".equals(c.g)) loadEpisodes(c.u, c.n);
                           else if ("BACK_TYPE".equals(c.g)) loadSeasons(c.u);
-                          else { 
-                              long t = System.currentTimeMillis(); 
-                              if (t - lastClickTime < 400) toggleFull(true); 
-                              else playChannel(c, i); 
-                              lastClickTime = t; 
-                          }
+                          else { long t = System.currentTimeMillis(); if (t - lastClickTime < 400) toggleFull(true); else playChannel(c, i); lastClickTime = t; }
                       });
                   }
                   public int getItemCount() { return items.size(); }
@@ -361,12 +367,12 @@ jobs:
           }
           EOF
 
-          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:networkSecurityConfig="@xml/network_security_config" android:label="Rabie Pro V26" android:icon="@android:drawable/btn_star"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape" android:configChanges="orientation|screenSize"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/><category android:name="android.intent.category.LEANBACK_LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
+          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:networkSecurityConfig="@xml/network_security_config" android:label="Rabie Pro V27" android:icon="@android:drawable/btn_star"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape" android:configChanges="orientation|screenSize"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/><category android:name="android.intent.category.LEANBACK_LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
           
           gradle wrapper --gradle-version 8.5
           chmod +x gradlew
           ./gradlew :app:assembleDebug --no-daemon
 
-      - name: UI_V26_Upload
+      - name: UI_V27_Upload
         uses: actions/upload-artifact@v4
-        with: { name: Rabie_Pro_V26_Quick_Switch, path: app/build/outputs/apk/debug/*.apk }
+        with: { name: Rabie_Pro_V27_AntiFreeze, path: app/build/outputs/apk/debug/*.apk }
