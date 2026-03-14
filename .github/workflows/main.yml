@@ -1,4 +1,4 @@
-name: Rabie_Pro_V28_Ultra_Buffer
+name: Rabie_Pro_V29_Advanced_Focus
 on: [push]
 jobs:
   build:
@@ -8,7 +8,7 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_V28_Final_Engine
+      - name: Build_V29
         run: |
           rm -rf app settings.gradle build.gradle gradle.properties .gradle
           echo "android.useAndroidX=true" > gradle.properties
@@ -39,9 +39,13 @@ jobs:
               android:layout_width="match_parent" android:layout_height="match_parent" 
               android:background="#0a0714" android:keepScreenOn="true">
               
-              <LinearLayout android:id="@+id/main_ui_container" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
+              <LinearLayout android:id="@+id/splash_screen" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#0a0714" android:gravity="center" android:elevation="25dp">
+                  <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE PRO" android:textColor="#ff9100" android:textSize="55sp" android:textStyle="bold" android:shadowColor="#55000000" android:shadowDx="5" android:shadowDy="5" android:shadowRadius="10"/>
+              </LinearLayout>
+
+              <LinearLayout android:id="@+id/main_ui_container" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:visibility="gone">
                   <LinearLayout android:layout_width="match_parent" android:layout_height="60dp" android:background="#000" android:gravity="center_vertical" android:padding="8dp">
-                      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE PRO V28" android:textColor="#ff9100" android:textStyle="bold" android:textSize="18sp" android:layout_marginRight="15dp"/>
+                      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE PRO" android:textColor="#ff9100" android:textStyle="bold" android:textSize="18sp" android:layout_marginRight="15dp"/>
                       <View android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"/>
                       <Button android:id="@+id/tab_live" android:layout_width="wrap_content" android:layout_height="38dp" android:text="القنوات" android:textColor="#CCC" android:textSize="12sp" android:layout_marginLeft="6dp" android:focusable="true" android:background="@drawable/tab_button_style"/>
                       <Button android:id="@+id/tab_movie" android:layout_width="wrap_content" android:layout_height="38dp" android:text="الأفلام" android:textColor="#CCC" android:textSize="12sp" android:layout_marginLeft="6dp" android:focusable="true" android:background="@drawable/tab_button_style"/>
@@ -53,11 +57,11 @@ jobs:
                       <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.5" android:orientation="vertical">
                           <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.65">
                               <androidx.media3.ui.PlayerView android:id="@+id/small_player" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#000" app:use_controller="false"/>
-                              <ProgressBar android:id="@+id/loading_s" android:layout_width="50dp" android:layout_height="50dp" android:layout_gravity="center" android:visibility="gone" android:indeterminateTint="#ff9100" android:elevation="10dp"/>
+                              <ProgressBar android:id="@+id/loading_s" android:layout_width="50dp" android:layout_height="50dp" android:layout_gravity="center" android:visibility="gone" android:indeterminateTint="#ff9100"/>
                           </FrameLayout>
                           <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.35" android:padding="15dp" android:background="#1c142e" android:orientation="vertical">
                               <TextView android:id="@+id/txt_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="اختر محتوى" android:textColor="#ff9100" android:textSize="18sp" android:textStyle="bold" android:maxLines="1"/>
-                              <Button android:id="@+id/btn_toggle_fav" android:layout_width="wrap_content" android:layout_height="38dp" android:text="⭐ مفضلة" android:layout_marginTop="10dp" android:focusable="true" android:background="@drawable/focus_highlight" android:paddingHorizontal="15dp"/>
+                              <Button android:id="@+id/btn_toggle_fav" android:layout_width="wrap_content" android:layout_height="38dp" android:text="⭐ إضافة للمفضلة" android:layout_marginTop="10dp" android:focusable="true" android:background="@drawable/focus_highlight" android:paddingHorizontal="15dp"/>
                           </LinearLayout>
                       </LinearLayout>
                       <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_items" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.28" android:background="#130d21"/>
@@ -67,18 +71,9 @@ jobs:
 
               <FrameLayout android:id="@+id/full_container" android:layout_width="match_parent" android:layout_height="match_parent" android:visibility="gone" android:background="#000" android:focusable="true" android:clickable="true">
                   <androidx.media3.ui.PlayerView android:id="@+id/full_player" android:layout_width="match_parent" android:layout_height="match_parent" app:resize_mode="fill" app:use_controller="false" />
-                  <ProgressBar android:id="@+id/loading_f" android:layout_width="80dp" android:layout_height="80dp" android:layout_gravity="center" android:visibility="gone" android:indeterminateTint="#ff9100" android:elevation="10dp"/>
+                  <ProgressBar android:id="@+id/loading_f" android:layout_width="80dp" android:layout_height="80dp" android:layout_gravity="center" android:visibility="gone" android:indeterminateTint="#ff9100"/>
                   <RelativeLayout android:id="@+id/overlay_full" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#CC000000" android:visibility="gone">
                       <TextView android:id="@+id/full_ch_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentTop="true" android:layout_centerHorizontal="true" android:layout_marginTop="30dp" android:textColor="#ff9100" android:textSize="24sp" android:textStyle="bold"/>
-                      <LinearLayout android:id="@+id/vod_controls" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:layout_alignParentBottom="true" android:padding="40dp">
-                          <SeekBar android:id="@+id/full_seekbar" android:layout_width="match_parent" android:layout_height="wrap_content" android:progressTint="#ff9100" android:thumbTint="#ff9100" android:focusable="true"/>
-                          <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:layout_marginTop="15dp">
-                              <TextView android:id="@+id/txt_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="00:00 / 00:00" android:textColor="#FFF" android:textSize="16sp"/>
-                              <Button android:id="@+id/btn_rew" android:layout_width="55dp" android:layout_height="55dp" android:text="⏪" android:backgroundTint="#221a36" android:layout_marginHorizontal="25dp" android:focusable="true" android:background="@drawable/focus_highlight"/>
-                              <Button android:id="@+id/btn_play_pause" android:layout_width="65dp" android:layout_height="65dp" android:text="⏸" android:backgroundTint="#ff9100" android:focusable="true" android:background="@drawable/focus_highlight"/>
-                              <Button android:id="@+id/btn_ffwd" android:layout_width="55dp" android:layout_height="55dp" android:text="⏩" android:backgroundTint="#221a36" android:layout_marginHorizontal="25dp" android:focusable="true" android:background="@drawable/focus_highlight"/>
-                          </LinearLayout>
-                      </LinearLayout>
                   </RelativeLayout>
               </FrameLayout>
           </RelativeLayout>
@@ -111,7 +106,7 @@ jobs:
 
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' version '8.2.2' }
-          android { namespace 'com.rabie.iptv'; compileSdk 34; defaultConfig { applicationId "com.rabie.iptv"; minSdk 21; targetSdk 34; versionCode 28; versionName "28.0" } }
+          android { namespace 'com.rabie.iptv'; compileSdk 34; defaultConfig { applicationId "com.rabie.iptv"; minSdk 21; targetSdk 34; versionCode 29; versionName "29.0" } }
           dependencies { 
               implementation 'androidx.appcompat:appcompat:1.6.1'
               implementation 'androidx.media3:media3-exoplayer:1.2.1'
@@ -150,16 +145,13 @@ jobs:
               private Ch currentCh;
               private int currentChIndex = -1;
               private RecyclerView rvG, rvI;
-              private TextView tTitle, tTime, tFullChName;
+              private TextView tTitle, tFullChName;
               private PlayerView smallPV, fullPV;
-              private View mainUI, fullCont, overlay, vodControls;
-              private SeekBar seekBar;
+              private View mainUI, fullCont, overlay, splash;
               private ProgressBar ps, pf;
               private String currentMode = "live";
               private Handler handler = new Handler();
               private long lastClickTime = 0;
-              private long lastPosition = 0;
-              private int freezeCount = 0;
 
               static class Ch { String n, u, g, l; }
 
@@ -169,26 +161,25 @@ jobs:
                   setContentView(R.layout.activity_main);
                   hideSystemUI();
 
-                  initUltraPlayer();
+                  splash = findViewById(R.id.splash_screen); mainUI = findViewById(R.id.main_ui_container);
+                  handler.postDelayed(() -> { splash.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE); }, 2500);
+
+                  initPlayer();
                   
-                  mainUI = findViewById(R.id.main_ui_container);
                   smallPV = findViewById(R.id.small_player); fullPV = findViewById(R.id.full_player);
                   fullCont = findViewById(R.id.full_container); overlay = findViewById(R.id.overlay_full);
-                  tTime = findViewById(R.id.txt_time); seekBar = findViewById(R.id.full_seekbar);
-                  tFullChName = findViewById(R.id.full_ch_name); vodControls = findViewById(R.id.vod_controls);
+                  tFullChName = findViewById(R.id.full_ch_name); 
                   ps = findViewById(R.id.loading_s); pf = findViewById(R.id.loading_f);
 
                   smallPV.setPlayer(player);
                   fullPV.setPlayer(player);
                   
-                  fullCont.setOnClickListener(v -> showOverlay());
                   rvG = findViewById(R.id.rv_groups); rvI = findViewById(R.id.rv_items);
                   tTitle = findViewById(R.id.txt_title);
                   rvG.setLayoutManager(new LinearLayoutManager(this));
                   rvI.setLayoutManager(new LinearLayoutManager(this));
 
                   loadFavs(); loadData();
-                  startFreezeMonitor(); // بدء مراقبة التجمد
 
                   getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
                       @Override public void handleOnBackPressed() { if (fullCont.getVisibility() == View.VISIBLE) toggleFull(false); else finish(); }
@@ -201,85 +192,39 @@ jobs:
                   findViewById(R.id.btn_toggle_fav).setOnClickListener(v -> toggleFav());
               }
 
-              private void initUltraPlayer() {
-                  // إعدادات البافر القصوى لمنع التجمد تماماً
+              private void initPlayer() {
                   DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
-                          .setBufferDurationsMs(30000, 90000, 1500, 3000) // 30ث بافر، 90ث حد أقصى
-                          .setPrioritizeTimeOverSizeThresholds(true)
-                          .build();
-
+                          .setBufferDurationsMs(15000, 50000, 1000, 2000).build();
                   player = new ExoPlayer.Builder(this).setLoadControl(loadControl).build();
                   player.addListener(new Player.Listener() {
                       @Override public void onPlaybackStateChanged(int s) {
-                          updateLoadingVisibility(s == Player.STATE_BUFFERING);
+                          int v = (s == Player.STATE_BUFFERING) ? View.VISIBLE : View.GONE;
+                          ps.setVisibility(v); pf.setVisibility(v);
                       }
                       @Override public void onPlayerError(PlaybackException error) {
-                          long pos = player.getCurrentPosition();
-                          player.prepare(); player.seekTo(pos); player.play();
+                          long pos = player.getCurrentPosition(); player.prepare(); player.seekTo(pos); player.play();
                       }
                   });
-              }
-
-              // دالة مراقبة التجمد: تكتشف إذا كانت الصورة واقفة رغم أن المشغل يقول أنه يعمل
-              private void startFreezeMonitor() {
-                  handler.postDelayed(new Runnable() {
-                      @Override public void run() {
-                          if (player != null && player.isPlaying()) {
-                              long currentPos = player.getCurrentPosition();
-                              if (currentPos == lastPosition && currentPos != 0) {
-                                  freezeCount++;
-                                  if (freezeCount >= 2) { // إذا توقفت الصورة لثانيتين
-                                      updateLoadingVisibility(true);
-                                  }
-                                  if (freezeCount >= 5) { // إذا توقفت لـ 5 ثواني، أجبره على التحميل
-                                      player.prepare();
-                                      player.seekTo(currentPos);
-                                      player.play();
-                                      freezeCount = 0;
-                                  }
-                              } else {
-                                  freezeCount = 0;
-                                  updateLoadingVisibility(false);
-                              }
-                              lastPosition = currentPos;
-                          }
-                          handler.postDelayed(this, 1000);
-                      }
-                  }, 1000);
-              }
-
-              private void updateLoadingVisibility(boolean show) {
-                  int v = show ? View.VISIBLE : View.GONE;
-                  if (ps.getVisibility() != v) ps.setVisibility(v);
-                  if (pf.getVisibility() != v) pf.setVisibility(v);
-              }
-
-              private void playChannel(Ch c, int index) {
-                  currentCh = c; currentChIndex = index;
-                  tTitle.setText(c.n); freezeCount = 0;
-                  player.setMediaItem(MediaItem.fromUri(c.u));
-                  player.prepare(); player.play();
-              }
-
-              @Override
-              public boolean dispatchKeyEvent(KeyEvent event) {
-                  if (event.getAction() == KeyEvent.ACTION_DOWN && fullCont.getVisibility() == View.VISIBLE) {
-                      int code = event.getKeyCode();
-                      if (code == KeyEvent.KEYCODE_DPAD_UP) { if (currentChIndex > 0) playChannel(currentItems.get(currentChIndex - 1), currentChIndex - 1); return true; }
-                      if (code == KeyEvent.KEYCODE_DPAD_DOWN) { if (currentChIndex < currentItems.size() - 1) playChannel(currentItems.get(currentChIndex + 1), currentChIndex + 1); return true; }
-                      if (code == KeyEvent.KEYCODE_BACK) { toggleFull(false); return true; }
-                      showOverlay();
-                  }
-                  return super.dispatchKeyEvent(event);
               }
 
               private void toggleFull(boolean full) {
                   if (full) {
                       mainUI.setVisibility(View.GONE); fullCont.setVisibility(View.VISIBLE);
-                      PlayerView.switchTargetView(player, smallPV, fullPV); fullCont.requestFocus();
+                      PlayerView.switchTargetView(player, smallPV, fullPV); showOverlay();
+                      fullCont.requestFocus();
                   } else {
                       fullCont.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE);
                       PlayerView.switchTargetView(player, fullPV, smallPV);
+                      // العودة لنفس القناة في القائمة
+                      if (currentChIndex != -1) {
+                          rvI.post(() -> {
+                              rvI.scrollToPosition(currentChIndex);
+                              handler.postDelayed(() -> {
+                                  RecyclerView.ViewHolder vh = rvI.findViewHolderForAdapterPosition(currentChIndex);
+                                  if (vh != null) vh.itemView.requestFocus();
+                              }, 100);
+                          });
+                      }
                   }
               }
 
@@ -324,11 +269,17 @@ jobs:
                   public VH onCreateViewHolder(ViewGroup p, int t) { return new VH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_channel, p, false)); }
                   public void onBindViewHolder(VH h, int i) {
                       Ch c = items.get(i); h.n.setText(c.n); 
+                      // دعم لوغو الأقسام واللوغو العادي
                       Glide.with(h.itemView).load(c.l).placeholder(android.R.drawable.ic_menu_gallery).into(h.img);
                       h.itemView.setOnClickListener(v -> {
                           if ("SEASON_TYPE".equals(c.g)) loadEpisodes(c.u, c.n);
                           else if ("BACK_TYPE".equals(c.g)) loadSeasons(c.u);
-                          else { long t = System.currentTimeMillis(); if (t - lastClickTime < 400) toggleFull(true); else playChannel(c, i); lastClickTime = t; }
+                          else { 
+                              long t = System.currentTimeMillis(); 
+                              if (t - lastClickTime < 400) toggleFull(true); 
+                              else { currentCh = c; currentChIndex = i; tTitle.setText(c.n); player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play(); } 
+                              lastClickTime = t; 
+                          }
                       });
                   }
                   public int getItemCount() { return items.size(); }
@@ -356,12 +307,12 @@ jobs:
           }
           EOF
 
-          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:networkSecurityConfig="@xml/network_security_config" android:label="Rabie Pro V28" android:icon="@android:drawable/btn_star"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape" android:configChanges="orientation|screenSize"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/><category android:name="android.intent.category.LEANBACK_LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
+          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:networkSecurityConfig="@xml/network_security_config" android:label="Rabie Pro V29" android:icon="@android:drawable/btn_star"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape" android:configChanges="orientation|screenSize"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/><category android:name="android.intent.category.LEANBACK_LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
           
           gradle wrapper --gradle-version 8.5
           chmod +x gradlew
           ./gradlew :app:assembleDebug --no-daemon
 
-      - name: UI_V28_Upload
+      - name: UI_V29_Upload
         uses: actions/upload-artifact@v4
-        with: { name: Rabie_Pro_V28_Final_Engine, path: app/build/outputs/apk/debug/*.apk }
+        with: { name: Rabie_Pro_V29_Advanced_Focus, path: app/build/outputs/apk/debug/*.apk }
