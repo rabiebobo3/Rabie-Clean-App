@@ -1,4 +1,4 @@
-name: Rabie_Pro_V32_Fixed_Final
+name: Rabie_Pro_V35_DoubleClick_Fixed
 on: [push]
 jobs:
   build:
@@ -8,7 +8,7 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_V32_Add_Only
+      - name: Build_V35
         run: |
           rm -rf app settings.gradle build.gradle gradle.properties .gradle
           echo "android.useAndroidX=true" > gradle.properties
@@ -26,7 +26,7 @@ jobs:
 
           echo '<?xml version="1.0" encoding="utf-8"?><network-security-config><base-config cleartextTrafficPermitted="true"/></network-security-config>' > app/src/main/res/xml/network_security_config.xml
 
-          # واجهة V32 الأصلية: القائمة على اليمين والمشغل على اليسار
+          # واجهة V32: قائمة يمين ومشغل يسار
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -73,7 +73,7 @@ jobs:
 
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' version '8.2.2' }
-          android { namespace 'com.rabie.iptv'; compileSdk 34; defaultConfig { applicationId "com.rabie.iptv"; minSdk 21; targetSdk 34; versionCode 34; versionName "34.0" } }
+          android { namespace 'com.rabie.iptv'; compileSdk 34; defaultConfig { applicationId "com.rabie.iptv"; minSdk 21; targetSdk 34; versionCode 35; versionName "35.0" } }
           dependencies { 
               implementation 'androidx.appcompat:appcompat:1.6.1'
               implementation 'androidx.media3:media3-exoplayer:1.2.1'
@@ -119,6 +119,7 @@ jobs:
               private ProgressBar ps, pf;
               private String currentMode = "live";
               private Handler handler = new Handler(Looper.getMainLooper());
+              private long lastClickTime = 0; // للتحكم في الضغط المزدوج
 
               static class Ch { String n, u, g, l; }
 
@@ -130,7 +131,6 @@ jobs:
                   splash = findViewById(R.id.splash_screen); mainUI = findViewById(R.id.main_ui_container);
                   handler.postDelayed(() -> { splash.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE); }, 2000);
 
-                  // إضافة ميزة منع التجمد
                   DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
                       .setBufferDurationsMs(2500, 30000, 1000, 1500).build();
                   player = new ExoPlayer.Builder(this).setLoadControl(loadControl).build();
@@ -183,7 +183,6 @@ jobs:
                   } else { 
                       fullCont.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE); 
                       PlayerView.switchTargetView(player, fullPV, smallPV);
-                      // العودة لنفس القناة
                       if(currentChIndex != -1) {
                           rvI.scrollToPosition(currentChIndex);
                           handler.postDelayed(() -> {
@@ -217,7 +216,6 @@ jobs:
                   public VH onCreateViewHolder(ViewGroup p, int t) { return new VH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_channel, p, false)); }
                   public void onBindViewHolder(VH h, int i) {
                       String name = g.get(i); h.n.setText(name);
-                      // إضافة سحب اللوقو للقسم
                       Glide.with(MainActivity.this).load(groupLogos.get(name)).placeholder(android.R.drawable.ic_menu_slideshow).into(h.img);
                       h.itemView.setOnClickListener(v -> {
                           if (currentMode.equals("series")) {
@@ -241,7 +239,16 @@ jobs:
                           if (currentMode.equals("series") && series.containsKey(c.g) && series.get(c.g).containsKey(c.n)) {
                               rvI.setAdapter(new ItemAdapter(series.get(c.g).get(c.n)));
                           } else {
-                              currentCh = c; currentChIndex = i; player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play(); tTitle.setText(c.n);
+                              // ميزة الضغط مرتين للمشغل الكبير
+                              long clickTime = System.currentTimeMillis();
+                              if (clickTime - lastClickTime < 400) {
+                                  toggleFull(true);
+                              } else {
+                                  currentCh = c; currentChIndex = i; 
+                                  player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play(); 
+                                  tTitle.setText(c.n);
+                              }
+                              lastClickTime = clickTime;
                           }
                       });
                   }
@@ -298,6 +305,6 @@ jobs:
           chmod +x gradlew
           ./gradlew :app:assembleDebug --no-daemon
 
-      - name: Success_V32_Fixed
-        uses: actions/upload-artifact@v4
-        with: { name: Rabie_Pro_V32_Fixed, path: app/build/outputs/apk/debug/*.apk }
+      - name: Success_V35
+        uses: upload-artifact@v4
+        with: { name: Rabie_Pro_V35_DoubleClick, path: app/build/outputs/apk/debug/*.apk }
