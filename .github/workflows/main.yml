@@ -1,4 +1,4 @@
-name: Rabie_Pro_V32_Final_Fix
+name: Rabie_Pro_V32_5_TV_Touch
 on: [push]
 jobs:
   build:
@@ -8,7 +8,7 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_V32_Perfect
+      - name: Build_V32_5_TV_Special
         run: |
           rm -rf app settings.gradle build.gradle gradle.properties .gradle
           echo "android.useAndroidX=true" > gradle.properties
@@ -27,7 +27,7 @@ jobs:
           mkdir -p app/src/main/res/drawable
           mkdir -p app/src/main/res/xml
 
-          # صنع ملفات الأزرار الدائرية (التي تظهر في صورك)
+          # ملفات الأزرار والوميض
           cat <<EOF > app/src/main/res/drawable/round_btn.xml
           <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval"><solid android:color="#33FFFFFF"/><stroke android:width="1dp" android:color="#66FFFFFF"/></shape>
           EOF
@@ -51,19 +51,21 @@ jobs:
           <?xml version="1.0" encoding="utf-8"?><network-security-config><base-config cleartextTrafficPermitted="true"/></network-security-config>
           EOF
 
-          # كود الـ Layout (كودك الأصلي)
+          # التعديل هنا: إضافة HorizontalScrollView للتمرير اليدوي في شريط الأزرار
           cat <<'EOF' > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#0a0714" android:keepScreenOn="true">
               <LinearLayout android:id="@+id/splash_screen" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#0a0714" android:gravity="center" android:elevation="20dp"><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE PRO" android:textColor="#ff9100" android:textSize="50sp" android:textStyle="bold"/></LinearLayout>
               <LinearLayout android:id="@+id/main_ui_container" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:visibility="gone">
-                  <LinearLayout android:layout_width="match_parent" android:layout_height="60dp" android:background="#000" android:gravity="center_vertical" android:padding="8dp">
-                      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE PRO" android:textColor="#ff9100" android:textStyle="bold" android:textSize="18sp" android:layout_marginRight="15dp"/><View android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"/>
-                      <Button android:id="@+id/tab_live" android:layout_width="wrap_content" android:layout_height="38dp" android:text="القنوات" android:textColor="#CCC" android:textSize="12sp" android:layout_marginLeft="6dp" android:focusable="true" android:background="@drawable/tab_button_style"/>
-                      <Button android:id="@+id/tab_movie" android:layout_width="wrap_content" android:layout_height="38dp" android:text="الأفلام" android:textColor="#CCC" android:textSize="12sp" android:layout_marginLeft="6dp" android:focusable="true" android:background="@drawable/tab_button_style"/>
-                      <Button android:id="@+id/tab_series" android:layout_width="wrap_content" android:layout_height="38dp" android:text="المسلسلات" android:textColor="#CCC" android:textSize="12sp" android:layout_marginLeft="6dp" android:focusable="true" android:background="@drawable/tab_button_style"/>
-                      <Button android:id="@+id/tab_fav" android:layout_width="50dp" android:layout_height="38dp" android:text="⭐" android:textColor="#ff9100" android:textSize="14sp" android:focusable="true" android:background="@drawable/tab_button_style"/>
-                  </LinearLayout>
+                  <HorizontalScrollView android:id="@+id/tabs_scroll" android:layout_width="match_parent" android:layout_height="65dp" android:background="#000" android:scrollbars="none">
+                      <LinearLayout android:layout_width="wrap_content" android:layout_height="match_parent" android:gravity="center_vertical" android:padding="8dp">
+                          <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE PRO" android:textColor="#ff9100" android:textStyle="bold" android:textSize="18sp" android:layout_marginRight="15dp"/>
+                          <Button android:id="@+id/tab_live" android:layout_width="wrap_content" android:layout_height="40dp" android:text="القنوات" android:textColor="#CCC" android:textSize="12sp" android:layout_marginLeft="6dp" android:focusable="true" android:background="@drawable/tab_button_style"/>
+                          <Button android:id="@+id/tab_movie" android:layout_width="wrap_content" android:layout_height="40dp" android:text="الأفلام" android:textColor="#CCC" android:textSize="12sp" android:layout_marginLeft="6dp" android:focusable="true" android:background="@drawable/tab_button_style"/>
+                          <Button android:id="@+id/tab_series" android:layout_width="wrap_content" android:layout_height="40dp" android:text="المسلسلات" android:textColor="#CCC" android:textSize="12sp" android:layout_marginLeft="6dp" android:focusable="true" android:background="@drawable/tab_button_style"/>
+                          <Button android:id="@+id/tab_fav" android:layout_width="50dp" android:layout_height="40dp" android:text="⭐" android:textColor="#ff9100" android:textSize="14sp" android:focusable="true" android:background="@drawable/tab_button_style"/>
+                      </LinearLayout>
+                  </HorizontalScrollView>
                   <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal">
                       <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.5" android:orientation="vertical">
                           <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.65"><androidx.media3.ui.PlayerView android:id="@+id/small_player" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#000" app:use_controller="false"/><ProgressBar android:id="@+id/loading_s" android:layout_width="45dp" android:layout_height="45dp" android:layout_gravity="center" android:visibility="gone" android:indeterminateTint="#ff9100"/></FrameLayout>
@@ -90,12 +92,12 @@ jobs:
           EOF
 
           cat <<'EOF' > app/src/main/res/layout/item_channel.xml
-          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:padding="10dp" android:focusable="true" android:clickable="true" android:background="@drawable/focus_highlight"><TextView android:id="@+id/txt_name" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#FFF" android:textSize="14sp" android:gravity="right" android:paddingRight="8dp"/><ImageView android:id="@+id/img_logo" android:layout_width="35dp" android:layout_height="35dp" android:scaleType="centerInside"/></LinearLayout>
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:padding="10dp" android:focusable="true" android:clickable="true" android:background="@drawable/focus_highlight"><TextView android:id="@+id/txt_name" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#FFF" android:textSize="14sp" android:gravity="right" android:paddingRight="8dp"/><ImageView android:id="@+id/img_logo" android:layout_width="40dp" android:layout_height="40dp" android:scaleType="centerInside"/></LinearLayout>
           EOF
 
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' version '8.2.2' }
-          android { namespace 'com.rabie.iptv'; compileSdk 34; defaultConfig { applicationId "com.rabie.iptv"; minSdk 21; targetSdk 34; versionCode 32; versionName "32.0" } }
+          android { namespace 'com.rabie.iptv'; compileSdk 34; defaultConfig { applicationId "com.rabie.iptv"; minSdk 21; targetSdk 34; versionCode 32; versionName "32.5" } }
           dependencies { 
               implementation 'androidx.appcompat:appcompat:1.6.1'
               implementation 'androidx.media3:media3-exoplayer:1.2.1'
@@ -108,7 +110,6 @@ jobs:
           }
           EOF
 
-          # كود الـ Java مع إصلاح الصورة في المشغل الصغير والذاكرة
           cat <<'EOF' > app/src/main/java/com/rabie/iptv/MainActivity.java
           package com.rabie.iptv;
           import android.os.*;
@@ -124,6 +125,7 @@ jobs:
           import com.android.volley.*;
           import com.android.volley.toolbox.*;
           import com.bumptech.glide.Glide;
+          import com.bumptech.glide.load.engine.DiskCacheStrategy;
           import com.google.gson.Gson;
           import com.google.gson.reflect.TypeToken;
           import java.util.*;
@@ -196,26 +198,26 @@ jobs:
 
               @Override
               public boolean onKeyDown(int keyCode, KeyEvent event) {
+                  // تحسين استدعاء شريط الأزرار: يظهر دائماً عند أي ضغط
                   if (fullCont.getVisibility() == View.VISIBLE) {
                       showOverlay();
                       if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_ENTER) { if(player.isPlaying()) player.pause(); else player.play(); return true; }
                       if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) { player.seekTo(player.getCurrentPosition() + 10000); return true; }
                       if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) { player.seekTo(player.getCurrentPosition() - 10000); return true; }
+                  } else {
+                      // إذا كنا في القائمة، أي حركة تجعل شريط الأزرار مرئياً
+                      findViewById(R.id.tabs_scroll).setVisibility(View.VISIBLE);
                   }
                   return super.onKeyDown(keyCode, event);
               }
 
               private void toggleFull(boolean full) {
                   if (full) {
-                      smallPV.setPlayer(null); // تحرير من الصغير
-                      mainUI.setVisibility(View.GONE); fullCont.setVisibility(View.VISIBLE);
-                      fullPV.setPlayer(player); // ربط بالكبير
-                      showOverlay();
+                      smallPV.setPlayer(null); mainUI.setVisibility(View.GONE); fullCont.setVisibility(View.VISIBLE);
+                      fullPV.setPlayer(player); showOverlay();
                   } else {
-                      fullPV.setPlayer(null); // تحرير من الكبير (لإصلاح الصورة)
-                      fullCont.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE);
-                      smallPV.setPlayer(player); // إعادة الربط بالصغير
-                      if(lastIdx != -1) rvI.scrollToPosition(lastIdx);
+                      fullPV.setPlayer(null); fullCont.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE);
+                      smallPV.setPlayer(player); if(lastIdx != -1) rvI.scrollToPosition(lastIdx);
                   }
               }
 
@@ -233,7 +235,15 @@ jobs:
                   List<String> g; Map<String, List<Ch>> d; Map<String, Map<String, List<Ch>>> s;
                   GroupAdapter(List<String> g, Map<String, List<Ch>> d, Map<String, Map<String, List<Ch>>> s) { this.g = g; this.d = d; this.s = s; }
                   public VH onCreateViewHolder(ViewGroup p, int t) { return new VH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_channel, p, false)); }
-                  public void onBindViewHolder(VH h, int i) { String gn = g.get(i); h.n.setText(gn); h.itemView.setOnClickListener(v -> { if (currentMode.equals("series")) loadSeasons(gn); else if (d != null) { currentItems = d.get(gn); rvI.setAdapter(new ItemAdapter(currentItems)); } }); }
+                  public void onBindViewHolder(VH h, int i) {
+                      String gn = g.get(i); h.n.setText(gn);
+                      String lUrl = ""; 
+                      if (d != null && d.get(gn) != null) lUrl = d.get(gn).get(0).l;
+                      else if (s != null && s.get(gn) != null) lUrl = s.get(gn).values().iterator().next().get(0).l;
+                      // دالة تحميل صور الأقسام بدون تجميد
+                      Glide.with(h.itemView).load(lUrl).diskCacheStrategy(DiskCacheStrategy.ALL).placeholder(android.R.drawable.ic_menu_report_image).into(h.img);
+                      h.itemView.setOnClickListener(v -> { if (currentMode.equals("series")) loadSeasons(gn); else if (d != null) { currentItems = d.get(gn); rvI.setAdapter(new ItemAdapter(currentItems)); } });
+                  }
                   public int getItemCount() { return g.size(); }
                   class VH extends RecyclerView.ViewHolder { TextView n; ImageView img; VH(View v) { super(v); n = v.findViewById(R.id.txt_name); img = v.findViewById(R.id.img_logo); } }
               }
@@ -245,7 +255,9 @@ jobs:
                   List<Ch> items; ItemAdapter(List<Ch> i) { items = i; }
                   public VH onCreateViewHolder(ViewGroup p, int t) { return new VH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_channel, p, false)); }
                   public void onBindViewHolder(VH h, int i) {
-                      Ch c = items.get(i); h.n.setText(c.n); Glide.with(h.itemView).load(c.l).into(h.img);
+                      Ch c = items.get(i); h.n.setText(c.n); 
+                      // دالة تحميل صور القنوات بدون تجميد + كاش
+                      Glide.with(h.itemView).load(c.l).diskCacheStrategy(DiskCacheStrategy.ALL).into(h.img);
                       h.itemView.setOnClickListener(v -> {
                           if ("SEASON_TYPE".equals(c.g)) loadEpisodes(c.u, c.n);
                           else if ("BACK_TYPE".equals(c.g)) loadSeasons(c.u);
@@ -259,7 +271,7 @@ jobs:
               private void updateProgress() { if (player != null && fullCont.getVisibility() == View.VISIBLE) { long dur = player.getDuration(); long pos = player.getCurrentPosition(); if (dur > 0) { seekBar.setMax((int) dur); seekBar.setProgress((int) pos); tTime.setText(formatTime(pos) + " / " + formatTime(dur)); } } handler.postDelayed(() -> updateProgress(), 1000); }
               private String formatTime(long ms) { long s = (ms/1000)%60, m = (ms/60000)%60, h = (ms/3600000); return h>0 ? String.format("%02d:%02d:%02d",h,m,s) : String.format("%02d:%02d",m,s); }
               private void hideSystemUI() { getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN); }
-              private void loadData() { String url = "https://gist.githubusercontent.com/rabiebobo3/d498347610d7312b3e9be88093117620/raw/list.m3u"; StringRequest req = new StringRequest(Request.Method.GET, url, res -> { parse(res); setMode("live"); }, null); req.setRetryPolicy(new DefaultRetryPolicy(15000, 2, 1.0f)); Volley.newRequestQueue(this).add(req); }
+              private void loadData() { String url = "https://gist.githubusercontent.com/rabiebobo3/d498347610d7312b3e9be88093117620/raw/list.m3u"; StringRequest req = new StringRequest(Request.Method.GET, url, res -> { parse(res); setMode("live"); }, null); req.setRetryPolicy(new DefaultRetryPolicy(20000, 3, 1.0f)); Volley.newRequestQueue(this).add(req); }
               private void loadFavs() { String j = getSharedPreferences("p", MODE_PRIVATE).getString("f", "[]"); favList = new Gson().fromJson(j, new TypeToken<List<Ch>>(){}.getType()); }
               private void toggleFav() { if (currentCh == null) return; boolean ex = false; for(int i=0; i<favList.size(); i++) if(favList.get(i).u.equals(currentCh.u)) { favList.remove(i); ex=true; break; } if(!ex) favList.add(currentCh); getSharedPreferences("p", MODE_PRIVATE).edit().putString("f", new Gson().toJson(favList)).apply(); }
               private void parse(String text) { String[] lines = text.split("\n"); Ch cur = null; for (String l : lines) { if (l.contains("#EXTINF:")) { cur = new Ch(); cur.n = l.split(",").length > 1 ? l.split(",")[1].trim() : "Unknown"; cur.g = l.contains("group-title=\"") ? l.split("group-title=\"")[1].split("\"")[0] : "Other"; cur.l = l.contains("tvg-logo=\"") ? l.split("tvg-logo=\"")[1].split("\"")[0] : ""; } else if (l.startsWith("http") && cur != null) { cur.u = l.trim(); String g = cur.g.toLowerCase(); if (g.contains("movie") || g.contains("افلام")) { if (!movie.containsKey(cur.g)) movie.put(cur.g, new ArrayList<Ch>()); movie.get(cur.g).add(cur); } else if (g.contains("series") || g.contains("مسلسل")) { if (!series.containsKey(cur.g)) series.put(cur.g, new LinkedHashMap<String, List<Ch>>()); String ssn = "Season 1"; if (!series.get(cur.g).containsKey(ssn)) series.get(cur.g).put(ssn, new ArrayList<Ch>()); series.get(cur.g).get(ssn).add(cur); } else { if (!live.containsKey(cur.g)) live.put(cur.g, new ArrayList<Ch>()); live.get(cur.g).add(cur); } cur = null; } } }
@@ -275,4 +287,4 @@ jobs:
 
       - name: UI_V32_Upload
         uses: actions/upload-artifact@v4
-        with: { name: Rabie_Pro_V32_Final, path: app/build/outputs/apk/debug/*.apk }
+        with: { name: Rabie_Pro_V32_TV_Touch, path: app/build/outputs/apk/debug/*.apk }
