@@ -22,7 +22,22 @@ jobs:
 
           mkdir -p app/src/main/java/com/rabie/iptv app/src/main/res/layout app/src/main/res/drawable app/src/main/res/xml
 
-          # واجهة المستخدم: المشغل يسار (0.5) - العناصر وسط (0.28) - المجموعات يمين (0.22)
+          # --- إنشاء ملفات الـ DRAWABLE (هذا ما كان ينقصنا) ---
+          cat <<EOF > app/src/main/res/drawable/tab_button_style.xml
+          <selector xmlns:android="http://schemas.android.com/apk/res/android">
+              <item android:state_focused="true"><shape><solid android:color="#ff9100"/><corners android:radius="15dp"/></shape></item>
+              <item><shape><solid android:color="#1c142e"/><corners android:radius="15dp"/></shape></item>
+          </selector>
+          EOF
+
+          cat <<EOF > app/src/main/res/drawable/focus_highlight.xml
+          <selector xmlns:android="http://schemas.android.com/apk/res/android">
+              <item android:state_focused="true"><shape><solid android:color="#33ff9100"/><stroke android:width="2dp" android:color="#ff9100"/><corners android:radius="4dp"/></shape></item>
+              <item><shape><solid android:color="@android:color/transparent"/></shape></item>
+          </selector>
+          EOF
+
+          # --- واجهة المستخدم: المشغل يسار والقوائم يمين ---
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -66,7 +81,17 @@ jobs:
           </RelativeLayout>
           EOF
 
-          # ملف build.gradle الخاص بالتطبيق
+          # --- بناء ملفات Gradle وبقية المشروع ---
+          cat <<EOF > build.gradle
+          buildscript {
+              repositories { google(); mavenCentral() }
+              dependencies { classpath 'com.android.tools.build:gradle:8.2.2' }
+          }
+          allprojects {
+              repositories { google(); mavenCentral() }
+          }
+          EOF
+
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' }
           android {
@@ -91,18 +116,6 @@ jobs:
           }
           EOF
 
-          # ملف build.gradle الرئيسي
-          cat <<EOF > build.gradle
-          buildscript {
-              repositories { google(); mavenCentral() }
-              dependencies { classpath 'com.android.tools.build:gradle:8.2.2' }
-          }
-          allprojects {
-              repositories { google(); mavenCentral() }
-          }
-          EOF
-
-          # كود الـ Java مع نظام المسلسلات والأفلام والقنوات المنفصل
           cat <<EOF > app/src/main/java/com/rabie/iptv/MainActivity.java
           package com.rabie.iptv;
           import android.os.*;
@@ -203,14 +216,14 @@ jobs:
                   }
               }
 
-              private void loadSeasons(String gn) { Map<String, List<Ch>> sm = series.get(gn); List<Ch> si = new ArrayList<>(); if(sm != null) { for (String sn : sm.keySet()) { Ch s = new Ch(); s.n = sn; s.g = "SEASON_TYPE"; s.u = gn; if(!sm.get(sn).isEmpty()) s.l = sm.get(sn).get(0).l; si.add(s); } } rvI.setAdapter(new ItemAdapter(si)); }
+              private void loadSeasons(String gn) { Map<String, List<Ch>> sm = series.get(gn); List<Ch> si = new ArrayList<>(); if(sm != null) { for (String sn : sm.keySet()) { Ch s = new Ch(); s.n = sn; s.g = "SEASON_TYPE"; s.u = gn; si.add(s); } } rvI.setAdapter(new ItemAdapter(si)); }
               private void loadEpisodes(String gn, String sn) { List<Ch> ep = series.get(gn).get(sn); rvI.setAdapter(new ItemAdapter(ep)); }
 
               class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.VH> {
                   List<String> g; Map<String, List<Ch>> d; Map<String, Map<String, List<Ch>>> s;
                   GroupAdapter(List<String> g, Map<String, List<Ch>> d, Map<String, Map<String, List<Ch>>> s) { this.g = g; this.d = d; this.s = s; }
                   public VH onCreateViewHolder(ViewGroup p, int t) { View v = LayoutInflater.from(p.getContext()).inflate(android.R.layout.simple_list_item_1, p, false); return new VH(v); }
-                  public void onBindViewHolder(VH h, int i) { String gn = g.get(i); ((TextView)h.itemView).setText(gn); h.itemView.setOnClickListener(v -> { if (currentMode.equals("series")) loadSeasons(gn); else { currentItems = d.get(gn); rvI.setAdapter(new ItemAdapter(currentItems)); } }); }
+                  public void onBindViewHolder(VH h, int i) { String gn = g.get(i); ((TextView)h.itemView).setText(gn); h.itemView.setTextColor(0xFFFFFFFF); h.itemView.setOnClickListener(v -> { if (currentMode.equals("series")) loadSeasons(gn); else { currentItems = d.get(gn); rvI.setAdapter(new ItemAdapter(currentItems)); } }); }
                   public int getItemCount() { return g.size(); }
                   class VH extends RecyclerView.ViewHolder { VH(View v) { super(v); } }
               }
@@ -219,7 +232,7 @@ jobs:
                   List<Ch> items; ItemAdapter(List<Ch> i) { items = i; }
                   public VH onCreateViewHolder(ViewGroup p, int t) { View v = LayoutInflater.from(p.getContext()).inflate(android.R.layout.simple_list_item_1, p, false); return new VH(v); }
                   public void onBindViewHolder(VH h, int i) {
-                      final int pos = i; final Ch c = items.get(pos); ((TextView)h.itemView).setText(c.n);
+                      final int pos = i; final Ch c = items.get(pos); ((TextView)h.itemView).setText(c.n); h.itemView.setTextColor(0xFFFFFFFF);
                       h.itemView.setOnClickListener(v -> {
                           if ("SEASON_TYPE".equals(c.g)) loadEpisodes(c.u, c.n);
                           else { 
@@ -242,7 +255,6 @@ jobs:
                           cur = new Ch(); 
                           cur.n = l.split(",").length > 1 ? l.split(",")[1].trim() : "Unknown"; 
                           cur.g = l.contains("group-title=\"") ? l.split("group-title=\"")[1].split("\"")[0] : "Other"; 
-                          cur.l = l.contains("tvg-logo=\"") ? l.split("tvg-logo=\"")[1].split("\"")[0] : ""; 
                       } else if (l.startsWith("http") && cur != null) {
                           cur.u = l.trim(); String g = cur.g.toLowerCase();
                           if (g.contains("movie") || g.contains("افلام")) { if (!movie.containsKey(cur.g)) movie.put(cur.g, new ArrayList<>()); movie.get(cur.g).add(cur); }
@@ -255,7 +267,6 @@ jobs:
           }
           EOF
 
-          # ملف المانيفست
           echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:label="Rabie Pro V32"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
           
           gradle wrapper --gradle-version 8.5
