@@ -1,4 +1,4 @@
-name: Rabie_Pro_V35_DoubleClick_Fixed
+name: Rabie_Pro_V35_Final_Fixed
 on: [push]
 jobs:
   build:
@@ -8,15 +8,16 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_V35
+      - name: Build_V35_Corrected
         run: |
           rm -rf app settings.gradle build.gradle gradle.properties .gradle
           echo "android.useAndroidX=true" > gradle.properties
           
+          # إصلاح مشكلة المستودعات (حل الصورة الأولى)
           cat <<EOF > settings.gradle
           pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
           dependencyResolutionManagement {
-              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
               repositories { google(); mavenCentral() }
           }
           include ':app'
@@ -33,11 +34,9 @@ jobs:
               xmlns:app="http://schemas.android.com/apk/res-auto"
               android:layout_width="match_parent" android:layout_height="match_parent" 
               android:background="#0a0714" android:keepScreenOn="true">
-              
               <LinearLayout android:id="@+id/splash_screen" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#0a0714" android:gravity="center" android:elevation="20dp">
                   <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE PRO" android:textColor="#ff9100" android:textSize="50sp" android:textStyle="bold"/>
               </LinearLayout>
-
               <LinearLayout android:id="@+id/main_ui_container" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:visibility="gone">
                   <LinearLayout android:layout_width="match_parent" android:layout_height="60dp" android:background="#000" android:gravity="center_vertical" android:padding="8dp">
                       <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE PRO" android:textColor="#ff9100" android:textStyle="bold" android:textSize="18sp" android:layout_marginRight="15dp"/>
@@ -47,7 +46,6 @@ jobs:
                       <Button android:id="@+id/tab_series" android:layout_width="wrap_content" android:layout_height="38dp" android:text="المسلسلات" android:textColor="#CCC" android:textSize="12sp" android:layout_marginLeft="6dp" android:focusable="true" android:background="@drawable/tab_button_style"/>
                       <Button android:id="@+id/tab_fav" android:layout_width="50dp" android:layout_height="38dp" android:text="⭐" android:textColor="#ff9100" android:focusable="true" android:background="@drawable/tab_button_style"/>
                   </LinearLayout>
-
                   <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal">
                       <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.5" android:orientation="vertical">
                           <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.65">
@@ -63,7 +61,6 @@ jobs:
                       <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_groups" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.22" android:background="#1c142e"/>
                   </LinearLayout>
               </LinearLayout>
-
               <FrameLayout android:id="@+id/full_container" android:layout_width="match_parent" android:layout_height="match_parent" android:visibility="gone" android:background="#000">
                   <androidx.media3.ui.PlayerView android:id="@+id/full_player" android:layout_width="match_parent" android:layout_height="match_parent" app:resize_mode="fill" app:use_controller="false" />
                   <ProgressBar android:id="@+id/loading_f" android:layout_width="70dp" android:layout_height="70dp" android:layout_gravity="center" android:visibility="gone" android:indeterminateTint="#ff9100"/>
@@ -80,7 +77,7 @@ jobs:
               implementation 'androidx.media3:media3-ui:1.2.1'
               implementation 'androidx.recyclerview:recyclerview:1.3.0'
               implementation 'com.android.volley:volley:1.2.1'
-              implementation 'com.google.code.gson:gson:2.10.1'
+              implementation 'com.google.gson:gson:2.10.1'
               implementation 'com.github.bumptech.glide:glide:4.16.0'
           }
           EOF
@@ -119,7 +116,7 @@ jobs:
               private ProgressBar ps, pf;
               private String currentMode = "live";
               private Handler handler = new Handler(Looper.getMainLooper());
-              private long lastClickTime = 0; // للتحكم في الضغط المزدوج
+              private long lastClickTime = 0;
 
               static class Ch { String n, u, g, l; }
 
@@ -127,12 +124,10 @@ jobs:
               protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
                   setContentView(R.layout.activity_main);
-                  
                   splash = findViewById(R.id.splash_screen); mainUI = findViewById(R.id.main_ui_container);
                   handler.postDelayed(() -> { splash.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE); }, 2000);
 
-                  DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
-                      .setBufferDurationsMs(2500, 30000, 1000, 1500).build();
+                  DefaultLoadControl loadControl = new DefaultLoadControl.Builder().setBufferDurationsMs(2500, 30000, 1000, 1500).build();
                   player = new ExoPlayer.Builder(this).setLoadControl(loadControl).build();
 
                   smallPV = findViewById(R.id.small_player); fullPV = findViewById(R.id.full_player);
@@ -170,10 +165,8 @@ jobs:
 
               private void showExitDialog() {
                   new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
-                      .setTitle("خروج")
-                      .setMessage("هل تريد الخروج؟")
-                      .setPositiveButton("نعم", (d, w) -> finish())
-                      .setNegativeButton("لا", null).show();
+                      .setTitle("خروج").setMessage("هل تريد الخروج؟")
+                      .setPositiveButton("نعم", (d, w) -> finish()).setNegativeButton("لا", null).show();
               }
 
               private void toggleFull(boolean full) {
@@ -239,14 +232,10 @@ jobs:
                           if (currentMode.equals("series") && series.containsKey(c.g) && series.get(c.g).containsKey(c.n)) {
                               rvI.setAdapter(new ItemAdapter(series.get(c.g).get(c.n)));
                           } else {
-                              // ميزة الضغط مرتين للمشغل الكبير
                               long clickTime = System.currentTimeMillis();
-                              if (clickTime - lastClickTime < 400) {
-                                  toggleFull(true);
-                              } else {
+                              if (clickTime - lastClickTime < 400) { toggleFull(true); } else {
                                   currentCh = c; currentChIndex = i; 
-                                  player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play(); 
-                                  tTitle.setText(c.n);
+                                  player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play(); tTitle.setText(c.n);
                               }
                               lastClickTime = clickTime;
                           }
@@ -279,7 +268,7 @@ jobs:
           }
           EOF
 
-          # تصميم العناصر - الحفاظ على اليمين واليسار (V32)
+          # تصميم العناصر
           cat <<EOF > app/src/main/res/drawable/tab_button_style.xml
           <selector xmlns:android="http://schemas.android.com/apk/res/android">
               <item android:state_focused="true"><shape><solid android:color="#ff9100"/><corners android:radius="19dp"/></shape></item>
@@ -300,11 +289,12 @@ jobs:
           EOF
 
           echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:networkSecurityConfig="@xml/network_security_config" android:label="Rabie Pro Fixed" android:icon="@android:drawable/btn_star"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/><category android:name="android.intent.category.LEANBACK_LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
-          
           gradle wrapper --gradle-version 8.5
           chmod +x gradlew
           ./gradlew :app:assembleDebug --no-daemon
 
-      - name: Success_V35
-        uses: upload-artifact@v4
-        with: { name: Rabie_Pro_V35_DoubleClick, path: app/build/outputs/apk/debug/*.apk }
+      - name: Success_V35_Download
+        uses: actions/upload-artifact@v4
+        with:
+          name: Rabie_Pro_V35_Final
+          path: app/build/outputs/apk/debug/*.apk
