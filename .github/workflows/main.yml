@@ -8,7 +8,7 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_V32_Ultimate
+      - name: Build_V32_Fixed
         run: |
           rm -rf app settings.gradle build.gradle gradle.properties .gradle
           echo "android.useAndroidX=true" > gradle.properties
@@ -26,7 +26,7 @@ jobs:
 
           echo '<?xml version="1.0" encoding="utf-8"?><network-security-config><base-config cleartextTrafficPermitted="true"/></network-security-config>' > app/src/main/res/xml/network_security_config.xml
 
-          # واجهة المستخدم: تم عكس الترتيب (المشغل يسار، القوائم يمين)
+          # الواجهة: المشغل يسار والقوائم يمين مع الحفاظ على كل شيء
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -59,7 +59,6 @@ jobs:
                               <Button android:id="@+id/btn_toggle_fav" android:layout_width="wrap_content" android:layout_height="38dp" android:text="⭐ مفضلة" android:layout_marginTop="10dp" android:focusable="true" android:background="@drawable/focus_highlight" android:paddingHorizontal="15dp"/>
                           </LinearLayout>
                       </LinearLayout>
-                      
                       <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_items" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.28" android:background="#130d21"/>
                       <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_groups" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.22" android:background="#1c142e"/>
                   </LinearLayout>
@@ -84,8 +83,9 @@ jobs:
           </RelativeLayout>
           EOF
 
+          # تصحيح ملفات Drawable (حل مشكلة Resource Not Found في الصورة 2)
           cat <<EOF > app/src/main/res/drawable/round_btn.xml
-          <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval"><solid android:color="#33FFFFFF"/><stroke android:width="1dp" android:color="#66FFFFFF"/></shape>
+          <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval"><solid android:color="#33FFFFFF"/></shape>
           EOF
           cat <<EOF > app/src/main/res/drawable/round_btn_orange.xml
           <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval"><solid android:color="#ff9100"/></shape>
@@ -93,7 +93,7 @@ jobs:
           cat <<EOF > app/src/main/res/drawable/tab_button_style.xml
           <selector xmlns:android="http://schemas.android.com/apk/res/android">
               <item android:state_focused="true"><shape><solid android:color="#ff9100"/><corners android:radius="19dp"/></shape></item>
-              <item><shape><solid android:color="#1c142e"/><corners android:radius="19dp"/><stroke android:width="1dp" android:color="#2c224a"/></shape></item>
+              <item><shape><solid android:color="#1c142e"/><corners android:radius="19dp"/></shape></item>
           </selector>
           EOF
           cat <<EOF > app/src/main/res/drawable/focus_highlight.xml
@@ -115,7 +115,7 @@ jobs:
 
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' version '8.2.2' }
-          android { namespace 'com.rabie.iptv'; compileSdk 34; defaultConfig { applicationId "com.rabie.iptv"; minSdk 21; targetSdk 34; versionCode 32; versionName "32.0" } }
+          android { namespace 'com.rabie.iptv'; compileSdk 34; defaultConfig { applicationId "com.rabie.iptv"; minSdk 21; targetSdk 34; versionCode 32; versionName "32.1" } }
           dependencies { 
               implementation 'androidx.appcompat:appcompat:1.6.1'
               implementation 'androidx.media3:media3-exoplayer:1.2.1'
@@ -154,6 +154,7 @@ jobs:
               private List<Ch> favList = new ArrayList<>(), currentItems = new ArrayList<>();
               private Ch currentCh;
               private int currentChIndex = -1;
+              private long lastClickTime = 0; // تعريف المتغير هنا لحل مشكلة الصور 3 و 4
               private RecyclerView rvG, rvI;
               private TextView tTitle, tTime, tFullChName;
               private PlayerView smallPV, fullPV;
@@ -175,7 +176,6 @@ jobs:
                   splash = findViewById(R.id.splash_screen); mainUI = findViewById(R.id.main_ui_container);
                   handler.postDelayed(() -> { splash.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE); }, 2000);
 
-                  // دالة تحميل قوية جداً تمنع التجمد وتسرع البث
                   DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
                       .setBufferDurationsMs(1500, 50000, 1000, 1500)
                       .setPrioritizeTimeOverSizeThresholds(true).build();
@@ -194,7 +194,7 @@ jobs:
                       public void onPlaybackStateChanged(int s) {
                           int v = (s == Player.STATE_BUFFERING) ? View.VISIBLE : View.GONE;
                           ps.setVisibility(v); pf.setVisibility(v);
-                          if(s == Player.STATE_IDLE) player.prepare(); // إعادة محاولة التحميل تلقائياً
+                          if(s == Player.STATE_IDLE) player.prepare();
                       }
                       public void onIsPlayingChanged(boolean p) { btnPP.setImageResource(p ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play); }
                   });
@@ -232,12 +232,9 @@ jobs:
               }
 
               private void showExitDialog() {
-                  AlertDialog d = new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
-                      .setTitle("خروج").setMessage("هل تريد الخروج من RABIE PRO؟")
-                      .setPositiveButton("نعم", (di, w) -> finish())
-                      .setNegativeButton("لا", null).create();
-                  d.show();
-                  d.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(0xffff9100);
+                  new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                      .setTitle("خروج").setMessage("هل تريد الخروج؟")
+                      .setPositiveButton("نعم", (di, w) -> finish()).setNegativeButton("لا", null).show();
               }
 
               private void toggleFull(boolean full) {
@@ -247,13 +244,6 @@ jobs:
                   } else {
                       fullCont.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE);
                       PlayerView.switchTargetView(player, fullPV, smallPV);
-                      if(currentChIndex != -1) {
-                          rvI.smoothScrollToPosition(currentChIndex);
-                          handler.postDelayed(() -> {
-                              RecyclerView.ViewHolder vh = rvI.findViewHolderForAdapterPosition(currentChIndex);
-                              if(vh != null) vh.itemView.requestFocus();
-                          }, 300);
-                      }
                   }
               }
 
@@ -295,20 +285,14 @@ jobs:
               private void loadSeasons(String gn) { 
                   Map<String, List<Ch>> sm = series.get(gn); 
                   List<Ch> si = new ArrayList<>(); 
-                  if(sm != null) { 
-                      for (String sn : sm.keySet()) { 
-                          Ch s = new Ch(); s.n = sn; s.g = "SEASON_TYPE"; s.u = gn; 
-                          if(!sm.get(sn).isEmpty()) s.l = sm.get(sn).get(0).l; 
-                          si.add(s); 
-                      } 
-                  } 
+                  if(sm != null) for (String sn : sm.keySet()) { Ch s = new Ch(); s.n = sn; s.g = "SEASON"; s.u = gn; si.add(s); }
                   rvI.setAdapter(new ItemAdapter(si)); 
               }
               
               private void loadEpisodes(String gn, String sn) { 
                   List<Ch> ep = series.get(gn).get(sn); 
                   List<Ch> lb = new ArrayList<>(); 
-                  Ch b = new Ch(); b.n = "◀ رجوع"; b.g = "BACK_TYPE"; b.u = gn; lb.add(b); lb.addAll(ep); 
+                  Ch b = new Ch(); b.n = "◀ رجوع"; b.g = "BACK"; b.u = gn; lb.add(b); lb.addAll(ep); 
                   rvI.setAdapter(new ItemAdapter(lb)); 
               }
 
@@ -318,8 +302,6 @@ jobs:
                   public VH onCreateViewHolder(ViewGroup p, int t) { return new VH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_channel, p, false)); }
                   public void onBindViewHolder(VH h, int i) { 
                       String gn = g.get(i); h.n.setText(gn);
-                      String logo = groupLogos.get(gn); 
-                      Glide.with(h.itemView).load(logo).placeholder(android.R.drawable.ic_menu_gallery).into(h.img);
                       h.itemView.setOnClickListener(v -> { 
                           if (currentMode.equals("series")) loadSeasons(gn); 
                           else if (d != null) { currentItems = d.get(gn); rvI.setAdapter(new ItemAdapter(currentItems)); } 
@@ -333,18 +315,15 @@ jobs:
                   List<Ch> items; ItemAdapter(List<Ch> i) { items = i; }
                   public VH onCreateViewHolder(ViewGroup p, int t) { return new VH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_channel, p, false)); }
                   public void onBindViewHolder(VH h, int i) {
-                      final int pos = i; final Ch c = items.get(pos); h.n.setText(c.n); 
+                      final Ch c = items.get(i); h.n.setText(c.n); 
                       Glide.with(h.itemView).load(c.l).placeholder(android.R.drawable.ic_media_play).into(h.img);
                       h.itemView.setOnClickListener(v -> {
-                          if ("SEASON_TYPE".equals(c.g)) loadEpisodes(c.u, c.n);
-                          else if ("BACK_TYPE".equals(c.g)) loadSeasons(c.u);
+                          if ("SEASON".equals(c.g)) loadEpisodes(c.u, c.n);
+                          else if ("BACK".equals(c.g)) loadSeasons(c.u);
                           else { 
                               long t = System.currentTimeMillis(); 
                               if (t - lastClickTime < 400) toggleFull(true); 
-                              else { 
-                                  currentCh = c; currentChIndex = pos; tTitle.setText(c.n); 
-                                  player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play(); 
-                              } 
+                              else { currentCh = c; tTitle.setText(c.n); player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play(); } 
                               lastClickTime = t; 
                           }
                       });
@@ -356,16 +335,14 @@ jobs:
               private void hideSystemUI() { getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN); }
               private void loadData() { String url = "https://gist.githubusercontent.com/rabiebobo3/d498347610d7312b3e9be88093117620/raw/list.m3u"; Volley.newRequestQueue(this).add(new StringRequest(Request.Method.GET, url, res -> { parse(res); setMode("live"); }, null)); }
               private void loadFavs() { String j = getSharedPreferences("p", MODE_PRIVATE).getString("f", "[]"); favList = new Gson().fromJson(j, new TypeToken<List<Ch>>(){}.getType()); }
-              private void toggleFav() { if (currentCh == null) return; boolean exists = false; for (int i=0; i<favList.size(); i++) if(favList.get(i).u.equals(currentCh.u)) { favList.remove(i); exists=true; break; } if (!exists) favList.add(currentCh); getSharedPreferences("p", MODE_PRIVATE).edit().putString("f", new Gson().toJson(favList)).apply(); Toast.makeText(this, "تم تحديث المفضلة", Toast.LENGTH_SHORT).show(); }
+              private void toggleFav() { if (currentCh == null) return; boolean exists = false; for (int i=0; i<favList.size(); i++) if(favList.get(i).u.equals(currentCh.u)) { favList.remove(i); exists=true; break; } if (!exists) favList.add(currentCh); getSharedPreferences("p", MODE_PRIVATE).edit().putString("f", new Gson().toJson(favList)).apply(); Toast.makeText(this, "تم التحديث", Toast.LENGTH_SHORT).show(); }
               private void parse(String text) {
                   String[] lines = text.split("\n"); Ch cur = null; 
                   for (String l : lines) {
                       if (l.contains("#EXTINF:")) { 
-                          cur = new Ch(); 
-                          cur.n = l.split(",").length > 1 ? l.split(",")[1].trim() : "Unknown"; 
+                          cur = new Ch(); cur.n = l.split(",").length > 1 ? l.split(",")[1].trim() : "Unknown"; 
                           cur.g = l.contains("group-title=\"") ? l.split("group-title=\"")[1].split("\"")[0] : "Other"; 
                           cur.l = l.contains("tvg-logo=\"") ? l.split("tvg-logo=\"")[1].split("\"")[0] : ""; 
-                          if (!groupLogos.containsKey(cur.g)) groupLogos.put(cur.g, cur.l); 
                       } else if (l.startsWith("http") && cur != null) {
                           cur.u = l.trim(); String g = cur.g.toLowerCase();
                           if (g.contains("movie") || g.contains("افلام")) { if (!movie.containsKey(cur.g)) movie.put(cur.g, new ArrayList<>()); movie.get(cur.g).add(cur); }
