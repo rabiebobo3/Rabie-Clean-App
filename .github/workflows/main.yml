@@ -1,4 +1,4 @@
-name: Rabie_Pro_V32_Ultimate
+name: Rabie_Pro_V32_Fixed_Final
 on: [push]
 jobs:
   build:
@@ -8,7 +8,7 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_Final
+      - name: Build_Final_Fix
         run: |
           rm -rf app settings.gradle build.gradle gradle.properties .gradle
           echo "android.useAndroidX=true" > gradle.properties
@@ -65,20 +65,6 @@ jobs:
           </RelativeLayout>
           EOF
 
-          cat <<EOF > app/build.gradle
-          plugins { id 'com.android.application' version '8.2.2' }
-          android { namespace 'com.rabie.iptv'; compileSdk 34; defaultConfig { applicationId "com.rabie.iptv"; minSdk 21; targetSdk 34; versionCode 32; versionName "32.0" } }
-          dependencies { 
-              implementation 'androidx.appcompat:appcompat:1.6.1'
-              implementation 'androidx.media3:media3-exoplayer:1.2.1'
-              implementation 'androidx.media3:media3-ui:1.2.1'
-              implementation 'androidx.recyclerview:recyclerview:1.3.0'
-              implementation 'com.android.volley:volley:1.2.1'
-              implementation 'com.google.code.gson:gson:2.10.1'
-              implementation 'com.github.bumptech.glide:glide:4.16.0'
-          }
-          EOF
-
           cat <<EOF > app/src/main/java/com/rabie/iptv/MainActivity.java
           package com.rabie.iptv;
           import android.os.*;
@@ -104,14 +90,13 @@ jobs:
               private Map<String, String> groupLogos = new HashMap<>();
               private List<Ch> favList = new ArrayList<>(), currentItems = new ArrayList<>();
               private Ch currentCh;
-              private int currentChPos = -1;
               private RecyclerView rvG, rvI;
               private TextView tTitle;
               private PlayerView smallPV, fullPV;
               private View mainUI, fullCont, splash;
               private ProgressBar ps, pf;
               private Handler handler = new Handler(Looper.getMainLooper());
-              private long lastClickTime = 0, lastPos = -1;
+              private long lastPos = -1;
 
               static class Ch { String n, u, g, l; }
 
@@ -135,17 +120,18 @@ jobs:
 
                   player.addListener(new Player.Listener() {
                       public void onPlaybackStateChanged(int s) {
-                          updateLoading(s == Player.STATE_BUFFERING);
-                          if (s == Player.STATE_IDLE && currentCh != null) { player.prepare(); player.play(); }
+                          int v = (s == Player.STATE_BUFFERING) ? View.VISIBLE : View.GONE;
+                          ps.setVisibility(v); pf.setVisibility(v);
                       }
-                      public void onPlayerError(PlaybackException e) { updateLoading(true); player.prepare(); player.play(); }
                   });
 
+                  // مراقب التجمد (Watchdog)
                   handler.post(new Runnable() {
                       public void run() {
                           if (player.isPlaying()) {
                               long cur = player.getCurrentPosition();
-                              updateLoading(cur == lastPos);
+                              if (cur == lastPos) { ps.setVisibility(View.VISIBLE); pf.setVisibility(View.VISIBLE); }
+                              else if (player.getPlaybackState() != Player.STATE_BUFFERING) { ps.setVisibility(View.GONE); pf.setVisibility(View.GONE); }
                               lastPos = cur;
                           }
                           handler.postDelayed(this, 1500);
@@ -172,11 +158,6 @@ jobs:
                   findViewById(R.id.btn_toggle_fav).setOnClickListener(v -> toggleFav());
               }
 
-              private void updateLoading(boolean show) {
-                  int v = show ? View.VISIBLE : View.GONE;
-                  if(ps.getVisibility() != v) { ps.setVisibility(v); pf.setVisibility(v); }
-              }
-
               private void toggleFull(boolean full) {
                   if (full) {
                       mainUI.setVisibility(View.GONE); fullCont.setVisibility(View.VISIBLE);
@@ -184,67 +165,47 @@ jobs:
                   } else {
                       fullCont.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE);
                       PlayerView.switchTargetView(player, fullPV, smallPV);
-                      // الرجوع المباشر للقناة في القائمة
-                      if (currentChPos != -1) {
-                          rvI.scrollToPosition(currentChPos);
-                          handler.postDelayed(() -> {
-                              View v = rvI.getLayoutManager().findViewByPosition(currentChPos);
-                              if (v != null) v.requestFocus();
-                          }, 200);
-                      }
                   }
               }
 
               private void setMode(String m) {
+                  Map<String, List<Ch>> d = m.equals("movie") ? movie : (m.equals("fav") ? null : live);
                   if (m.equals("fav")) {
-                      rvG.setAdapter(new GroupAdapter(Arrays.asList("المفضلة"), null, null));
+                      rvG.setAdapter(new GroupAdapter(Arrays.asList("المفضلة"), null));
                       currentItems = favList; rvI.setAdapter(new ItemAdapter(currentItems));
                   } else if (m.equals("series")) {
-                      List<String> groups = new ArrayList<>(series.keySet());
-                      rvG.setAdapter(new GroupAdapter(groups, null, series));
-                      if (!groups.isEmpty()) loadSeasons(groups.get(0));
-                  } else {
-                      Map<String, List<Ch>> d = m.equals("movie") ? movie : live;
+                      rvG.setAdapter(new GroupAdapter(new ArrayList<>(series.keySet()), null));
+                  } else if (d != null) {
                       List<String> gList = new ArrayList<>(d.keySet());
-                      rvG.setAdapter(new GroupAdapter(gList, d, null));
-                      if (!gList.isEmpty()) { currentItems = d.get(gList.get(0)); rvI.setAdapter(new ItemAdapter(currentItems)); }
+                      rvG.setAdapter(new GroupAdapter(gList, d));
                   }
               }
 
-              private void loadSeasons(String gn) { Map<String, List<Ch>> sm = series.get(gn); List<Ch> si = new ArrayList<>(); if(sm != null) { for (String sn : sm.keySet()) { Ch s = new Ch(); s.n = sn; s.g = "SEASON_TYPE"; s.u = gn; si.add(s); } } rvI.setAdapter(new ItemAdapter(si)); }
-              private void loadEpisodes(String gn, String sn) { List<Ch> ep = series.get(gn).get(sn); List<Ch> lb = new ArrayList<>(); Ch b = new Ch(); b.n = "◀ رجوع"; b.g = "BACK_TYPE"; b.u = gn; lb.add(b); lb.addAll(ep); rvI.setAdapter(new ItemAdapter(lb)); }
-
               class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.VH> {
-                  List<String> g; Map<String, List<Ch>> d; Map<String, Map<String, List<Ch>>> s;
-                  GroupAdapter(List<String> g, Map<String, List<Ch>> d, Map<String, Map<String, List<Ch>>> s) { this.g = g; this.d = d; this.s = s; }
+                  List<String> g; Map<String, List<Ch>> d;
+                  GroupAdapter(List<String> g, Map<String, List<Ch>> d) { this.g = g; this.d = d; }
                   public VH onCreateViewHolder(ViewGroup p, int t) { return new VH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_channel, p, false)); }
                   public void onBindViewHolder(VH h, int i) { 
                       String gn = g.get(i); h.n.setText(gn);
-                      Glide.with(h.itemView).load(groupLogos.get(gn)).placeholder(android.R.drawable.ic_menu_slideshow).into(h.img);
-                      h.itemView.setOnClickListener(v -> { if (s != null) loadSeasons(gn); else if (d != null) { currentItems = d.get(gn); rvI.setAdapter(new ItemAdapter(currentItems)); } }); 
+                      h.itemView.setOnClickListener(v -> { if (d != null) { currentItems = d.get(gn); rvI.setAdapter(new ItemAdapter(currentItems)); } }); 
                   }
                   public int getItemCount() { return g.size(); }
-                  class VH extends RecyclerView.ViewHolder { TextView n; ImageView img; VH(View v) { super(v); n = v.findViewById(R.id.txt_name); img = v.findViewById(R.id.img_logo); } }
+                  class VH extends RecyclerView.ViewHolder { TextView n; VH(View v) { super(v); n = v.findViewById(R.id.txt_name); } }
               }
 
               class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.VH> {
                   List<Ch> items; ItemAdapter(List<Ch> i) { items = i; }
                   public VH onCreateViewHolder(ViewGroup p, int t) { return new VH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_channel, p, false)); }
                   public void onBindViewHolder(VH h, int i) {
-                      final int pos = i; final Ch c = items.get(pos); h.n.setText(c.n); Glide.with(h.itemView).load(c.l).into(h.img);
+                      final Ch c = items.get(i); h.n.setText(c.n);
                       h.itemView.setOnClickListener(v -> {
-                          if ("SEASON_TYPE".equals(c.g)) loadEpisodes(c.u, c.n);
-                          else if ("BACK_TYPE".equals(c.g)) loadSeasons(c.u);
-                          else { 
-                              long t = System.currentTimeMillis(); 
-                              if (t - lastClickTime < 400) toggleFull(true); 
-                              else { currentCh = c; currentChPos = pos; tTitle.setText(c.n); updateLoading(true); player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play(); } 
-                              lastClickTime = t; 
-                          }
+                          currentCh = c; tTitle.setText(c.n);
+                          player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play();
                       });
+                      h.itemView.setOnLongClickListener(v -> { toggleFull(true); return true; });
                   }
                   public int getItemCount() { return items.size(); }
-                  class VH extends RecyclerView.ViewHolder { TextView n; ImageView img; VH(View v) { super(v); n = v.findViewById(R.id.txt_name); img = v.findViewById(R.id.img_logo); } }
+                  class VH extends RecyclerView.ViewHolder { TextView n; VH(View v) { super(v); n = v.findViewById(R.id.txt_name); } }
               }
 
               private void hideSystemUI() { getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN); }
@@ -257,12 +218,10 @@ jobs:
                       if (l.contains("#EXTINF:")) { 
                           cur = new Ch(); cur.n = l.split(",").length > 1 ? l.split(",")[1].trim() : "Unknown"; 
                           cur.g = l.contains("group-title=\"") ? l.split("group-title=\"")[1].split("\"")[0] : "Other"; 
-                          cur.l = l.contains("tvg-logo=\"") ? l.split("tvg-logo=\"")[1].split("\"")[0] : ""; 
-                          if (!groupLogos.containsKey(cur.g)) groupLogos.put(cur.g, cur.l);
                       } else if (l.startsWith("http") && cur != null) {
                           cur.u = l.trim(); String g = cur.g.toLowerCase();
-                          if (g.contains("movie") || g.contains("افلام")) movie.computeIfAbsent(cur.g, k->new ArrayList<>()).add(cur);
-                          else if (g.contains("series") || g.contains("مسلسل")) series.computeIfAbsent(cur.g, k->new LinkedHashMap<>()).computeIfAbsent("Season 1", k->new ArrayList<>()).add(cur);
+                          if (g.contains("movie")) movie.computeIfAbsent(cur.g, k->new ArrayList<>()).add(cur);
+                          else if (g.contains("series")) series.computeIfAbsent(cur.g, k->new LinkedHashMap<>()).computeIfAbsent("Season 1", k->new ArrayList<>()).add(cur);
                           else live.computeIfAbsent(cur.g, k->new ArrayList<>()).add(cur);
                           cur = null;
                       }
@@ -287,7 +246,6 @@ jobs:
           cat <<EOF > app/src/main/res/layout/item_channel.xml
           <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:padding="10dp" android:focusable="true" android:background="@drawable/focus_highlight">
               <TextView android:id="@+id/txt_name" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#FFF" android:textSize="14sp" android:gravity="right" android:paddingRight="8dp"/>
-              <ImageView android:id="@+id/img_logo" android:layout_width="35dp" android:layout_height="35dp" android:scaleType="centerInside"/>
           </LinearLayout>
           EOF
 
@@ -297,6 +255,6 @@ jobs:
           chmod +x gradlew
           ./gradlew :app:assembleDebug --no-daemon
 
-      - name: UI_V32_Final_Fixed
+      - name: UI_V32_Ultimate
         uses: actions/upload-artifact@v4
-        with: { name: Rabie_Pro_V32_Ultimate, path: app/build/outputs/apk/debug/*.apk }
+        with: { name: Rabie_Pro_V32_Perfected, path: app/build/outputs/apk/debug/*.apk }
