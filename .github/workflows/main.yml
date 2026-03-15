@@ -8,7 +8,7 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_V32_Final
+      - name: Build_V32_Perfect
         run: |
           rm -rf app settings.gradle build.gradle gradle.properties .gradle
           echo "android.useAndroidX=true" > gradle.properties
@@ -77,13 +77,13 @@ jobs:
                       <TextView android:id="@+id/full_ch_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentTop="true" android:layout_centerHorizontal="true" android:layout_marginTop="20dp" android:textColor="#ff9100" android:textSize="20sp" android:textStyle="bold"/>
                       
                       <LinearLayout android:id="@+id/vod_controls" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:layout_alignParentBottom="true" android:padding="30dp" android:gravity="center">
-                          <SeekBar android:id="@+id/full_seekbar" android:layout_width="match_parent" android:layout_height="wrap_content" android:progressTint="#ff9100" android:thumbTint="#ff9100" android:focusable="true" android:nextFocusUp="@+id/full_seekbar"/>
+                          <SeekBar android:id="@+id/full_seekbar" android:layout_width="match_parent" android:layout_height="wrap_content" android:progressTint="#ff9100" android:thumbTint="#ff9100" android:focusable="true"/>
                           <TextView android:id="@+id/txt_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="00:00 / 00:00" android:textColor="#FFF" android:layout_marginTop="5dp"/>
                           
                           <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:layout_marginTop="10dp">
-                              <ImageButton android:id="@+id/btn_rew" android:layout_width="55dp" android:layout_height="55dp" android:src="@android:drawable/ic_media_rew" android:background="@drawable/round_btn" android:layout_margin="10dp" android:focusable="true"/>
-                              <ImageButton android:id="@+id/btn_play_pause" android:layout_width="70dp" android:layout_height="70dp" android:src="@android:drawable/ic_media_pause" android:background="@drawable/round_btn_orange" android:layout_margin="10dp" android:focusable="true"/>
-                              <ImageButton android:id="@+id/btn_ffwd" android:layout_width="55dp" android:layout_height="55dp" android:src="@android:drawable/ic_media_ff" android:background="@drawable/round_btn" android:layout_margin="10dp" android:focusable="true"/>
+                              <ImageButton android:id="@+id/btn_rew" android:layout_width="55dp" android:layout_height="55dp" android:src="@android:drawable/ic_media_rew" android:background="@drawable/round_btn" android:layout_margin="10dp" android:focusable="true" android:contentDescription="Rewind"/>
+                              <ImageButton android:id="@+id/btn_play_pause" android:layout_width="70dp" android:layout_height="70dp" android:src="@android:drawable/ic_media_pause" android:background="@drawable/round_btn_orange" android:layout_margin="10dp" android:focusable="true" android:contentDescription="PlayPause"/>
+                              <ImageButton android:id="@+id/btn_ffwd" android:layout_width="55dp" android:layout_height="55dp" android:src="@android:drawable/ic_media_ff" android:background="@drawable/round_btn" android:layout_margin="10dp" android:focusable="true" android:contentDescription="FastForward"/>
                           </LinearLayout>
                       </LinearLayout>
                   </RelativeLayout>
@@ -120,7 +120,7 @@ jobs:
               android:padding="10dp" android:focusable="true" android:clickable="true"
               android:background="@drawable/focus_highlight">
               <TextView android:id="@+id/txt_name" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#FFF" android:textSize="14sp" android:gravity="right" android:paddingRight="8dp"/>
-              <ImageView android:id="@+id/img_logo" android:layout_width="40dp" android:layout_height="40dp" android:scaleType="centerInside"/>
+              <ImageView android:id="@+id/img_logo" android:layout_width="35dp" android:layout_height="35dp" android:scaleType="centerInside"/>
           </LinearLayout>
           EOF
 
@@ -229,15 +229,17 @@ jobs:
                   findViewById(R.id.tab_live).setOnClickListener(v -> setMode("live"));
                   findViewById(R.id.tab_movie).setOnClickListener(v -> setMode("movie"));
                   findViewById(R.id.tab_series).setOnClickListener(v -> setMode("series"));
+                  findViewById(R.id.tab_fav).setOnClickListener(v -> setMode("fav"));
+                  findViewById(R.id.btn_toggle_fav).setOnClickListener(v -> toggleFav());
                   btnPP.setOnClickListener(v -> { if(player.isPlaying()) player.pause(); else player.play(); });
+                  findViewById(R.id.btn_rew).setOnClickListener(v -> player.seekTo(player.getCurrentPosition() - 15000));
+                  findViewById(R.id.btn_ffwd).setOnClickListener(v -> player.seekTo(player.getCurrentPosition() + 15000));
               }
 
               private void showExitDialog() {
                   new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
-                      .setTitle("خروج")
-                      .setMessage("هل تريد الخروج من التطبيق؟")
-                      .setPositiveButton("نعم", (dialog, which) -> finish())
-                      .setNegativeButton("لا", null).show();
+                      .setTitle("خروج").setMessage("هل تريد الخروج؟")
+                      .setPositiveButton("نعم", (d, w) -> finish()).setNegativeButton("لا", null).show();
               }
 
               @Override
@@ -270,19 +272,30 @@ jobs:
 
               private void setMode(String m) {
                   currentMode = m;
-                  Map<String, List<Ch>> d = m.equals("movie") ? movie : live;
-                  List<String> groups = new ArrayList<>(d.keySet());
-                  rvG.setAdapter(new GroupAdapter(groups, d));
+                  if (m.equals("fav")) {
+                      rvG.setAdapter(new GroupAdapter(Arrays.asList("المفضلة"), null, null));
+                      currentItems = favList; rvI.setAdapter(new ItemAdapter(currentItems));
+                  } else if (m.equals("series")) {
+                      List<String> groups = new ArrayList<>(series.keySet());
+                      rvG.setAdapter(new GroupAdapter(groups, null, series));
+                  } else {
+                      Map<String, List<Ch>> d = m.equals("movie") ? movie : live;
+                      List<String> groups = new ArrayList<>(d.keySet());
+                      rvG.setAdapter(new GroupAdapter(groups, d, null));
+                  }
               }
 
+              private void loadSeasons(String gn) { Map<String, List<Ch>> sm = series.get(gn); List<Ch> si = new ArrayList<>(); if(sm != null) { for (String sn : sm.keySet()) { Ch s = new Ch(); s.n = sn; s.g = "SEASON_TYPE"; s.u = gn; si.add(s); } } rvI.setAdapter(new ItemAdapter(si)); }
+              private void loadEpisodes(String gn, String sn) { List<Ch> ep = series.get(gn).get(sn); List<Ch> lb = new ArrayList<>(); Ch b = new Ch(); b.n = "◀ رجوع"; b.g = "BACK_TYPE"; b.u = gn; lb.add(b); lb.addAll(ep); rvI.setAdapter(new ItemAdapter(lb)); }
+
               class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.VH> {
-                  List<String> g; Map<String, List<Ch>> d;
-                  GroupAdapter(List<String> g, Map<String, List<Ch>> d) { this.g = g; this.d = d; }
+                  List<String> g; Map<String, List<Ch>> d; Map<String, Map<String, List<Ch>>> s;
+                  GroupAdapter(List<String> g, Map<String, List<Ch>> d, Map<String, Map<String, List<Ch>>> s) { this.g = g; this.d = d; this.s = s; }
                   public VH onCreateViewHolder(ViewGroup p, int t) { return new VH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_channel, p, false)); }
                   public void onBindViewHolder(VH h, int i) {
                       String gn = g.get(i); h.n.setText(gn);
-                      if (d.get(gn) != null && !d.get(gn).isEmpty()) Glide.with(h.itemView).load(d.get(gn).get(0).l).into(h.img);
-                      h.itemView.setOnClickListener(v -> { currentItems = d.get(gn); rvI.setAdapter(new ItemAdapter(currentItems)); });
+                      if (d != null && d.get(gn) != null) Glide.with(h.itemView).load(d.get(gn).get(0).l).into(h.img);
+                      h.itemView.setOnClickListener(v -> { if (currentMode.equals("series")) loadSeasons(gn); else if (d != null) { currentItems = d.get(gn); rvI.setAdapter(new ItemAdapter(currentItems)); } });
                   }
                   public int getItemCount() { return g.size(); }
                   class VH extends RecyclerView.ViewHolder { TextView n; ImageView img; VH(View v) { super(v); n = v.findViewById(R.id.txt_name); img = v.findViewById(R.id.img_logo); } }
@@ -294,10 +307,9 @@ jobs:
                   public void onBindViewHolder(VH h, int i) {
                       Ch c = items.get(i); h.n.setText(c.n); Glide.with(h.itemView).load(c.l).into(h.img);
                       h.itemView.setOnClickListener(v -> {
-                          long t = System.currentTimeMillis();
-                          if (t - lastClickTime < 400) toggleFull(true);
-                          else { currentCh = c; tTitle.setText(c.n); player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play(); }
-                          lastClickTime = t;
+                          if ("SEASON_TYPE".equals(c.g)) loadEpisodes(c.u, c.n);
+                          else if ("BACK_TYPE".equals(c.g)) loadSeasons(c.u);
+                          else { long t = System.currentTimeMillis(); if (t - lastClickTime < 400) toggleFull(true); else { currentCh = c; tTitle.setText(c.n); player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play(); } lastClickTime = t; }
                       });
                   }
                   public int getItemCount() { return items.size(); }
@@ -314,23 +326,25 @@ jobs:
               private String formatTime(long ms) { long s = (ms/1000)%60, m = (ms/60000)%60, h = (ms/3600000); return h>0 ? String.format("%02d:%02d:%02d",h,m,s) : String.format("%02d:%02d",m,s); }
               private void hideSystemUI() { getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN); }
               private void loadData() { String url = "https://gist.githubusercontent.com/rabiebobo3/d498347610d7312b3e9be88093117620/raw/list.m3u"; Volley.newRequestQueue(this).add(new StringRequest(Request.Method.GET, url, res -> { parse(res); setMode("live"); }, null)); }
-              private void loadFavs() { /* ... */ }
+              private void loadFavs() { String j = getSharedPreferences("p", MODE_PRIVATE).getString("f", "[]"); favList = new Gson().fromJson(j, new TypeToken<List<Ch>>(){}.getType()); }
+              private void toggleFav() { if (currentCh == null) return; boolean ex = false; for(int i=0; i<favList.size(); i++) if(favList.get(i).u.equals(currentCh.u)) { favList.remove(i); ex=true; break; } if(!ex) favList.add(currentCh); getSharedPreferences("p", MODE_PRIVATE).edit().putString("f", new Gson().toJson(favList)).apply(); }
               private void parse(String text) {
                   String[] lines = text.split("\n"); Ch cur = null; 
                   for (String l : lines) {
                       if (l.contains("#EXTINF:")) { 
-                          cur = new Ch(); 
-                          cur.n = l.split(",").length > 1 ? l.split(",")[1].trim() : "Unknown"; 
+                          cur = new Ch(); cur.n = l.split(",").length > 1 ? l.split(",")[1].trim() : "Unknown"; 
                           cur.g = l.contains("group-title=\"") ? l.split("group-title=\"")[1].split("\"")[0] : "Other"; 
                           cur.l = l.contains("tvg-logo=\"") ? l.split("tvg-logo=\"")[1].split("\"")[0] : ""; 
                       } else if (l.startsWith("http") && cur != null) {
                           cur.u = l.trim(); String g = cur.g.toLowerCase();
                           if (g.contains("movie") || g.contains("افلام")) { if (!movie.containsKey(cur.g)) movie.put(cur.g, new ArrayList<Ch>()); movie.get(cur.g).add(cur); }
+                          else if (g.contains("series") || g.contains("مسلسل")) { if (!series.containsKey(cur.g)) series.put(cur.g, new LinkedHashMap<String, List<Ch>>()); String ssn = "Season 1"; if (!series.get(cur.g).containsKey(ssn)) series.get(cur.g).put(ssn, new ArrayList<Ch>()); series.get(cur.g).get(ssn).add(cur); }
                           else { if (!live.containsKey(cur.g)) live.put(cur.g, new ArrayList<Ch>()); live.get(cur.g).add(cur); }
                           cur = null;
                       }
                   }
               }
+              protected void onStop() { super.onStop(); if(player != null) player.release(); }
           }
           EOF
 
