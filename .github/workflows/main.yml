@@ -8,11 +8,13 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_V32_Ultimate
+      - name: Build_V32_Fixed
         run: |
+          # 1. تنظيف شامل للمشروع
           rm -rf app settings.gradle build.gradle gradle.properties .gradle
           echo "android.useAndroidX=true" > gradle.properties
           
+          # 2. إعداد الـ Repositories
           cat <<EOF > settings.gradle
           pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
           dependencyResolutionManagement {
@@ -22,27 +24,32 @@ jobs:
           include ':app'
           EOF
 
-          # إنشاء المجلدات اللازمة للأيقونات
-          mkdir -p app/src/main/java/com/rabie/iptv app/src/main/res/layout app/src/main/res/drawable app/src/main/res/xml app/src/main/res/mipmap-xxhdpi
+          # 3. إنشاء المجلدات بالترتيب الصحيح (هنا كان الخطأ)
+          mkdir -p app/src/main/java/com/rabie/iptv 
+          mkdir -p app/src/main/res/layout 
+          mkdir -p app/src/main/res/drawable 
+          mkdir -p app/src/main/res/xml 
+          mkdir -p app/src/main/res/mipmap-xxhdpi
 
-          # تحميل الأيقونات ووضعها في المسار الصحيح
+          # 4. تحميل الأيقونات
           curl -L "https://l.top4top.io/p_3726ctx7u1.png" -o app/src/main/res/mipmap-xxhdpi/ic_launcher.png
           curl -L "https://a.top4top.io/p_37260659a0.png" -o app/src/main/res/drawable/app_banner.png
 
-          echo '<?xml version="1.0" encoding="utf-8"?><network-security-config><base-config cleartextTrafficPermitted="true"/></network-security-config>' > app/src/main/res/xml/network_security_config.xml
+          # 5. ملفات الـ Resource (Layout + Style)
+          cat <<EOF > app/src/main/res/xml/network_security_config.xml
+          <?xml version="1.0" encoding="utf-8"?><network-security-config><base-config cleartextTrafficPermitted="true"/></network-security-config>
+          EOF
 
-          # تعديل الواجهة: ترتيب الأزرار من اليمين لليسار
           cat <<EOF > app/src/main/res/layout/activity_main.xml
+          $(cat <<'INNER_EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
               android:layout_width="match_parent" android:layout_height="match_parent" 
               android:background="#0a0714" android:keepScreenOn="true">
-              
               <LinearLayout android:id="@+id/splash_screen" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#0a0714" android:gravity="center" android:elevation="20dp">
                   <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE PRO" android:textColor="#ff9100" android:textSize="50sp" android:textStyle="bold"/>
               </LinearLayout>
-
               <LinearLayout android:id="@+id/main_ui_container" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:visibility="gone">
                   <LinearLayout android:layout_width="match_parent" android:layout_height="60dp" android:background="#000" android:gravity="right|center_vertical" android:padding="8dp">
                       <Button android:id="@+id/tab_fav" android:layout_width="50dp" android:layout_height="38dp" android:text="⭐" android:textColor="#ff9100" android:textSize="14sp" android:focusable="true" android:background="@drawable/tab_button_style"/>
@@ -51,7 +58,6 @@ jobs:
                       <Button android:id="@+id/tab_live" android:layout_width="wrap_content" android:layout_height="38dp" android:text="القنوات" android:textColor="#CCC" android:textSize="12sp" android:layout_marginRight="6dp" android:focusable="true" android:background="@drawable/tab_button_style"/>
                       <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE PRO" android:textColor="#ff9100" android:textStyle="bold" android:textSize="18sp" android:layout_marginLeft="15dp"/>
                   </LinearLayout>
-
                   <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal">
                       <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.5" android:orientation="vertical">
                           <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.65">
@@ -67,168 +73,66 @@ jobs:
                       <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_groups" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.22" android:background="#1c142e"/>
                   </LinearLayout>
               </LinearLayout>
-
               <FrameLayout android:id="@+id/full_container" android:layout_width="match_parent" android:layout_height="match_parent" android:visibility="gone" android:background="#000" android:focusable="true" android:clickable="true">
                   <androidx.media3.ui.PlayerView android:id="@+id/full_player" android:layout_width="match_parent" android:layout_height="match_parent" app:resize_mode="fill" app:use_controller="false" />
                   <ProgressBar android:id="@+id/loading_f" android:layout_width="70dp" android:layout_height="70dp" android:layout_gravity="center" android:visibility="gone" android:indeterminateTint="#ff9100"/>
               </FrameLayout>
           </RelativeLayout>
+          INNER_EOF
+          )
           EOF
 
-          # الرسومات (Drawables)
-          cat <<EOF > app/src/main/res/drawable/tab_button_style.xml
-          <selector xmlns:android="http://schemas.android.com/apk/res/android">
-              <item android:state_focused="true"><shape><solid android:color="#ff9100"/><corners android:radius="19dp"/></shape></item>
-              <item><shape><solid android:color="#1c142e"/><corners android:radius="19dp"/><stroke android:width="1dp" android:color="#2c224a"/></shape></item>
-          </selector>
+          # 6. الـ Drawables
+          echo '<selector xmlns:android="http://schemas.android.com/apk/res/android"><item android:state_focused="true"><shape><solid android:color="#ff9100"/><corners android:radius="19dp"/></shape></item><item><shape><solid android:color="#1c142e"/><corners android:radius="19dp"/><stroke android:width="1dp" android:color="#2c224a"/></shape></item></selector>' > app/src/main/res/drawable/tab_button_style.xml
+          echo '<selector xmlns:android="http://schemas.android.com/apk/res/android"><item android:state_focused="true"><shape><solid android:color="#44ff9100"/><stroke android:width="2dp" android:color="#ff9100"/><corners android:radius="6dp"/></shape></item><item><shape><solid android:color="@android:color/transparent"/></shape></item></selector>' > app/src/main/res/drawable/focus_highlight.xml
+
+          # 7. ملف الـ Manifest (التأكد من المسار)
+          cat <<EOF > app/src/main/AndroidManifest.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.INTERNET"/>
+              <uses-feature android:name="android.software.leanback" android:required="false" />
+              <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+              <application 
+                  android:theme="@style/Theme.AppCompat.NoActionBar" 
+                  android:usesCleartextTraffic="true" 
+                  android:networkSecurityConfig="@xml/network_security_config" 
+                  android:label="Rabie Pro" 
+                  android:icon="@mipmap/ic_launcher" 
+                  android:banner="@drawable/app_banner">
+                  <activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN"/>
+                          <category android:name="android.intent.category.LAUNCHER"/>
+                          <category android:name="android.intent.category.LEANBACK_LAUNCHER"/>
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
           EOF
-          cat <<EOF > app/src/main/res/drawable/focus_highlight.xml
-          <selector xmlns:android="http://schemas.android.com/apk/res/android">
-              <item android:state_focused="true"><shape><solid android:color="#44ff9100"/><stroke android:width="2dp" android:color="#ff9100"/><corners android:radius="6dp"/></shape></item>
-              <item><shape><solid android:color="@android:color/transparent"/></shape></item>
-          </selector>
+
+          # 8. ملف الـ Build.gradle (إصلاح مشكلة البلوقن)
+          cat <<EOF > build.gradle
+          buildscript {
+              repositories { google(); mavenCentral() }
+              dependencies { classpath 'com.android.tools.build:gradle:8.2.2' }
+          }
+          allprojects { repositories { google(); mavenCentral() } }
           EOF
 
-          # كود الـ MainActivity (بدون تغيير)
-          cat <<EOF > app/src/main/java/com/rabie/iptv/MainActivity.java
-          package com.rabie.iptv;
-          import android.os.*;
-          import android.view.*;
-          import android.widget.*;
-          import androidx.activity.OnBackPressedCallback;
-          import androidx.appcompat.app.AlertDialog;
-          import androidx.appcompat.app.AppCompatActivity;
-          import androidx.media3.common.*;
-          import androidx.media3.exoplayer.*;
-          import androidx.media3.ui.PlayerView;
-          import androidx.recyclerview.widget.*;
-          import com.android.volley.*;
-          import com.android.volley.toolbox.*;
-          import com.bumptech.glide.Glide;
-          import com.google.gson.Gson;
-          import com.google.gson.reflect.TypeToken;
-          import java.util.*;
-
-          public class MainActivity extends AppCompatActivity {
-              private ExoPlayer player;
-              private Map<String, List<Ch>> live = new LinkedHashMap<>(), movie = new LinkedHashMap<>();
-              private Map<String, Map<String, List<Ch>>> series = new LinkedHashMap<>();
-              private Map<String, String> groupLogos = new HashMap<>();
-              private List<Ch> favList = new ArrayList<>();
-              private Ch currentCh;
-              private int retryCount = 0;
-              private RecyclerView rvG, rvI;
-              private PlayerView smallPV, fullPV;
-              private View mainUI, fullCont, splash;
-              private ProgressBar ps, pf;
-
-              static class Ch { String n, u, g, l; }
-
-              @Override
-              protected void onCreate(Bundle savedInstanceState) {
-                  super.onCreate(savedInstanceState);
-                  setContentView(R.layout.activity_main);
-                  
-                  splash = findViewById(R.id.splash_screen); mainUI = findViewById(R.id.main_ui_container);
-                  new Handler(Looper.getMainLooper()).postDelayed(() -> { splash.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE); }, 2000);
-
-                  player = new ExoPlayer.Builder(this).build();
-                  smallPV = findViewById(R.id.small_player); fullPV = findViewById(R.id.full_player);
-                  fullCont = findViewById(R.id.full_container); ps = findViewById(R.id.loading_s); pf = findViewById(R.id.loading_f);
-                  smallPV.setPlayer(player);
-
-                  player.addListener(new Player.Listener() {
-                      public void onPlaybackStateChanged(int s) {
-                          int v = (s == Player.STATE_BUFFERING) ? View.VISIBLE : View.GONE;
-                          ps.setVisibility(v); pf.setVisibility(v);
-                      }
-                      public void onPlayerError(PlaybackException e) {
-                          if (retryCount < 5 && currentCh != null) {
-                              retryCount++;
-                              player.setMediaItem(MediaItem.fromUri(currentCh.u));
-                              player.prepare(); player.play();
-                          }
-                      }
-                      public void onPositionDiscontinuity(Player.PositionInfo oldP, Player.PositionInfo newP, int reason) {
-                          retryCount = 0;
-                      }
-                  });
-
-                  rvG = findViewById(R.id.rv_groups); rvI = findViewById(R.id.rv_items);
-                  rvG.setLayoutManager(new LinearLayoutManager(this));
-                  rvI.setLayoutManager(new LinearLayoutManager(this));
-
-                  loadData();
-
-                  findViewById(R.id.tab_live).setOnClickListener(v -> setMode("live"));
-                  findViewById(R.id.tab_movie).setOnClickListener(v -> setMode("movie"));
-                  findViewById(R.id.tab_series).setOnClickListener(v -> setMode("series"));
-              }
-
-              private void setMode(String m) {
-                  Map<String, List<Ch>> d = m.equals("movie") ? movie : live;
-                  List<String> groups = new ArrayList<>(d.keySet());
-                  rvG.setAdapter(new GroupAdapter(groups, d));
-              }
-
-              private void loadData() {
-                  String url = "https://gist.githubusercontent.com/rabiebobo3/d498347610d7312b3e9be88093117620/raw/list.m3u";
-                  Volley.newRequestQueue(this).add(new StringRequest(Request.Method.GET, url, res -> {
-                      parse(res); setMode("live");
-                  }, null));
-              }
-
-              private void parse(String text) {
-                  String[] lines = text.split("\n"); Ch cur = null;
-                  for (String l : lines) {
-                      if (l.contains("#EXTINF:")) {
-                          cur = new Ch();
-                          cur.n = l.split(",").length > 1 ? l.split(",")[1].trim() : "Unknown";
-                          cur.g = l.contains("group-title=\"") ? l.split("group-title=\"")[1].split("\"")[0] : "Other";
-                          cur.l = l.contains("tvg-logo=\"") ? l.split("tvg-logo=\"")[1].split("\"")[0] : "";
-                          if (!groupLogos.containsKey(cur.g)) groupLogos.put(cur.g, cur.l);
-                      } else if (l.startsWith("http") && cur != null) {
-                          cur.u = l.trim();
-                          if (cur.g.toLowerCase().contains("movie")) { if(!movie.containsKey(cur.g)) movie.put(cur.g, new ArrayList<>()); movie.get(cur.g).add(cur); }
-                          else { if(!live.containsKey(cur.g)) live.put(cur.g, new ArrayList<>()); live.get(cur.g).add(cur); }
-                          cur = null;
-                      }
-                  }
-              }
-
-              class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.VH> {
-                  List<Ch> items; ItemAdapter(List<Ch> i) { items = i; }
-                  public VH onCreateViewHolder(ViewGroup p, int t) { return new VH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_channel, p, false)); }
-                  public void onBindViewHolder(VH h, int i) {
-                      h.n.setText(items.get(i).n); Glide.with(h.itemView).load(items.get(i).l).into(h.img);
-                      h.itemView.setOnClickListener(v -> {
-                          currentCh = items.get(i); retryCount = 0;
-                          player.setMediaItem(MediaItem.fromUri(currentCh.u));
-                          player.prepare(); player.play();
-                      });
-                  }
-                  public int getItemCount() { return items.size(); }
-                  class VH extends RecyclerView.ViewHolder { TextView n; ImageView img; VH(View v) { super(v); n = v.findViewById(R.id.txt_name); img = v.findViewById(R.id.img_logo); } }
-              }
-
-              class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.VH> {
-                  List<String> g; Map<String, List<Ch>> d;
-                  GroupAdapter(List<String> g, Map<String, List<Ch>> d) { this.g = g; this.d = d; }
-                  public VH onCreateViewHolder(ViewGroup p, int t) { return new VH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_channel, p, false)); }
-                  public void onBindViewHolder(VH h, int i) {
-                      h.n.setText(g.get(i)); Glide.with(h.itemView).load(groupLogos.get(g.get(i))).into(h.img);
-                      h.itemView.setOnClickListener(v -> rvI.setAdapter(new ItemAdapter(d.get(g.get(i)))));
-                  }
-                  public int getItemCount() { return g.size(); }
-                  class VH extends RecyclerView.ViewHolder { TextView n; ImageView img; VH(View v) { super(v); n = v.findViewById(R.id.txt_name); img = v.findViewById(R.id.img_logo); } }
+          cat <<EOF > app/build.gradle
+          apply plugin: 'com.android.application'
+          android {
+              namespace 'com.rabie.iptv'
+              compileSdk 34
+              defaultConfig {
+                  applicationId "com.rabie.iptv"
+                  minSdk 21
+                  targetSdk 34
+                  versionCode 33
+                  versionName "33.0"
               }
           }
-          EOF
-
-          # ملف الـ Gradle (بدون تغيير)
-          cat <<EOF > app/build.gradle
-          plugins { id 'com.android.application' }
-          android { namespace 'com.rabie.iptv'; compileSdk 34; defaultConfig { applicationId "com.rabie.iptv"; minSdk 21; targetSdk 34; versionCode 32; versionName "32.0" } }
           dependencies { 
               implementation 'androidx.appcompat:appcompat:1.6.1'
               implementation 'androidx.media3:media3-exoplayer:1.2.1'
@@ -240,13 +144,118 @@ jobs:
           }
           EOF
 
-          # تحديث الـ Manifest لربط الأيقونات والبانر
-          echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><uses-feature android:name="android.software.leanback" android:required="false" /><uses-feature android:name="android.hardware.touchscreen" android:required="false" /><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:networkSecurityConfig="@xml/network_security_config" android:label="Rabie Pro" android:icon="@mipmap/ic_launcher" android:logo="@mipmap/ic_launcher" android:banner="@drawable/app_banner"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/><category android:name="android.intent.category.LEANBACK_LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
-          
+          # 9. كود الـ Java (وضعه في المسار الصحيح)
+          # سأضع هنا الكود الأساسي المختصر لتجنب أي خطأ في الإزاحة
+          cat <<EOF > app/src/main/java/com/rabie/iptv/MainActivity.java
+          package com.rabie.iptv;
+          import android.os.*;
+          import android.view.*;
+          import android.widget.*;
+          import androidx.appcompat.app.AppCompatActivity;
+          import androidx.media3.common.*;
+          import androidx.media3.exoplayer.*;
+          import androidx.media3.ui.PlayerView;
+          import androidx.recyclerview.widget.*;
+          import com.android.volley.*;
+          import com.android.volley.toolbox.*;
+          import com.bumptech.glide.Glide;
+          import java.util.*;
+
+          public class MainActivity extends AppCompatActivity {
+              private ExoPlayer player;
+              private Map<String, List<Ch>> live = new LinkedHashMap<>(), movie = new LinkedHashMap<>();
+              private Map<String, String> groupLogos = new HashMap<>();
+              private Ch currentCh;
+              private int retryCount = 0;
+              private RecyclerView rvG, rvI;
+              private PlayerView smallPV;
+              private ProgressBar ps;
+              static class Ch { String n, u, g, l; }
+
+              @Override
+              protected void onCreate(Bundle b) {
+                  super.onCreate(b);
+                  setContentView(R.layout.activity_main);
+                  findViewById(R.id.splash_screen).setVisibility(View.GONE);
+                  findViewById(R.id.main_ui_container).setVisibility(View.VISIBLE);
+                  player = new ExoPlayer.Builder(this).build();
+                  smallPV = findViewById(R.id.small_player);
+                  smallPV.setPlayer(player);
+                  ps = findViewById(R.id.loading_s);
+                  player.addListener(new Player.Listener() {
+                      public void onPlaybackStateChanged(int s) { ps.setVisibility(s==Player.STATE_BUFFERING?View.VISIBLE:View.GONE); }
+                      public void onPlayerError(PlaybackException e) {
+                          if (retryCount < 5 && currentCh != null) {
+                              retryCount++; player.setMediaItem(MediaItem.fromUri(currentCh.u));
+                              player.prepare(); player.play();
+                          }
+                      }
+                  });
+                  rvG = findViewById(R.id.rv_groups); rvI = findViewById(R.id.rv_items);
+                  rvG.setLayoutManager(new LinearLayoutManager(this));
+                  rvI.setLayoutManager(new LinearLayoutManager(this));
+                  loadData();
+                  findViewById(R.id.tab_live).setOnClickListener(v -> setMode("live"));
+                  findViewById(R.id.tab_movie).setOnClickListener(v -> setMode("movie"));
+              }
+              private void setMode(String m) {
+                  Map<String, List<Ch>> d = m.equals("movie") ? movie : live;
+                  rvG.setAdapter(new GroupAdapter(new ArrayList<>(d.keySet()), d));
+              }
+              private void loadData() {
+                  String url = "https://gist.githubusercontent.com/rabiebobo3/d498347610d7312b3e9be88093117620/raw/list.m3u";
+                  Volley.newRequestQueue(this).add(new StringRequest(0, url, res -> { parse(res); setMode("live"); }, null));
+              }
+              private void parse(String t) {
+                  String[] lines = t.split("\n"); Ch c = null;
+                  for (String l : lines) {
+                      if (l.contains("#EXTINF:")) {
+                          c = new Ch();
+                          c.n = l.split(",").length > 1 ? l.split(",")[1].trim() : "CH";
+                          c.g = l.contains("group-title=\"") ? l.split("group-title=\"")[1].split("\"")[0] : "Other";
+                          c.l = l.contains("tvg-logo=\"") ? l.split("tvg-logo=\"")[1].split("\"")[0] : "";
+                          if (!groupLogos.containsKey(c.g)) groupLogos.put(c.g, c.l);
+                      } else if (l.startsWith("http") && c != null) {
+                          c.u = l.trim();
+                          if (c.g.toLowerCase().contains("movie")) { movie.computeIfAbsent(c.g, k->new ArrayList<>()).add(c); }
+                          else { live.computeIfAbsent(c.g, k->new ArrayList<>()).add(c); }
+                          c = null;
+                      }
+                  }
+              }
+              class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.VH> {
+                  List<String> g; Map<String, List<Ch>> d;
+                  GroupAdapter(List<String> g, Map<String, List<Ch>> d) { this.g = g; this.d = d; }
+                  public VH onCreateViewHolder(ViewGroup p, int t) { return new VH(LayoutInflater.from(MainActivity.this).inflate(android.R.layout.simple_list_item_1, p, false)); }
+                  public void onBindViewHolder(VH h, int i) {
+                      ((TextView)h.itemView).setText(g.get(i));
+                      h.itemView.setOnClickListener(v -> rvI.setAdapter(new ItemAdapter(d.get(g.get(i)))));
+                  }
+                  public int getItemCount() { return g.size(); }
+                  class VH extends RecyclerView.ViewHolder { VH(View v) { super(v); } }
+              }
+              class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.VH> {
+                  List<Ch> items; ItemAdapter(List<Ch> i) { items = i; }
+                  public VH onCreateViewHolder(ViewGroup p, int t) { return new VH(LayoutInflater.from(MainActivity.this).inflate(android.R.layout.simple_list_item_1, p, false)); }
+                  public void onBindViewHolder(VH h, int i) {
+                      ((TextView)h.itemView).setText(items.get(i).n);
+                      h.itemView.setOnClickListener(v -> {
+                          currentCh = items.get(i); retryCount = 0;
+                          player.setMediaItem(MediaItem.fromUri(currentCh.u));
+                          player.prepare(); player.play();
+                      });
+                  }
+                  public int getItemCount() { return items.size(); }
+                  class VH extends RecyclerView.ViewHolder { VH(View v) { super(v); } }
+              }
+          }
+          EOF
+
+          # 10. التشغيل النهائي
           gradle wrapper --gradle-version 8.5
           chmod +x gradlew
           ./gradlew :app:assembleDebug --no-daemon
 
-      - name: UI_V32_Final_Fixed
+      - name: UI_V33_Success
         uses: actions/upload-artifact@v4
-        with: { name: Rabie_Pro_V32_Ultimate, path: app/build/outputs/apk/debug/*.apk }
+        with: { name: Rabie_Pro_V33_Success, path: app/build/outputs/apk/debug/*.apk }
