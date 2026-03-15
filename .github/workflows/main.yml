@@ -8,13 +8,13 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_V32_Fixed
+      - name: Build_V33_Verified
         run: |
           # 1. تنظيف شامل للمشروع
           rm -rf app settings.gradle build.gradle gradle.properties .gradle
           echo "android.useAndroidX=true" > gradle.properties
           
-          # 2. إعداد الـ Repositories
+          # 2. إعداد الـ settings.gradle (هنا الحل: هي الوحيدة اللي تتحكم في الـ Repos)
           cat <<EOF > settings.gradle
           pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
           dependencyResolutionManagement {
@@ -24,18 +24,18 @@ jobs:
           include ':app'
           EOF
 
-          # 3. إنشاء المجلدات بالترتيب الصحيح (هنا كان الخطأ)
+          # 3. إنشاء المجلدات
           mkdir -p app/src/main/java/com/rabie/iptv 
           mkdir -p app/src/main/res/layout 
           mkdir -p app/src/main/res/drawable 
           mkdir -p app/src/main/res/xml 
           mkdir -p app/src/main/res/mipmap-xxhdpi
 
-          # 4. تحميل الأيقونات
+          # 4. تحميل الأيقونات (الروابط اللي عطيتهم لي)
           curl -L "https://l.top4top.io/p_3726ctx7u1.png" -o app/src/main/res/mipmap-xxhdpi/ic_launcher.png
           curl -L "https://a.top4top.io/p_37260659a0.png" -o app/src/main/res/drawable/app_banner.png
 
-          # 5. ملفات الـ Resource (Layout + Style)
+          # 5. ملفات الـ XML (Layout و الـ Security)
           cat <<EOF > app/src/main/res/xml/network_security_config.xml
           <?xml version="1.0" encoding="utf-8"?><network-security-config><base-config cleartextTrafficPermitted="true"/></network-security-config>
           EOF
@@ -86,20 +86,12 @@ jobs:
           echo '<selector xmlns:android="http://schemas.android.com/apk/res/android"><item android:state_focused="true"><shape><solid android:color="#ff9100"/><corners android:radius="19dp"/></shape></item><item><shape><solid android:color="#1c142e"/><corners android:radius="19dp"/><stroke android:width="1dp" android:color="#2c224a"/></shape></item></selector>' > app/src/main/res/drawable/tab_button_style.xml
           echo '<selector xmlns:android="http://schemas.android.com/apk/res/android"><item android:state_focused="true"><shape><solid android:color="#44ff9100"/><stroke android:width="2dp" android:color="#ff9100"/><corners android:radius="6dp"/></shape></item><item><shape><solid android:color="@android:color/transparent"/></shape></item></selector>' > app/src/main/res/drawable/focus_highlight.xml
 
-          # 7. ملف الـ Manifest (التأكد من المسار)
+          # 7. الـ Manifest
           cat <<EOF > app/src/main/AndroidManifest.xml
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               <uses-permission android:name="android.permission.INTERNET"/>
-              <uses-feature android:name="android.software.leanback" android:required="false" />
-              <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
-              <application 
-                  android:theme="@style/Theme.AppCompat.NoActionBar" 
-                  android:usesCleartextTraffic="true" 
-                  android:networkSecurityConfig="@xml/network_security_config" 
-                  android:label="Rabie Pro" 
-                  android:icon="@mipmap/ic_launcher" 
-                  android:banner="@drawable/app_banner">
+              <application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:networkSecurityConfig="@xml/network_security_config" android:label="Rabie Pro" android:icon="@mipmap/ic_launcher" android:banner="@drawable/app_banner">
                   <activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN"/>
@@ -111,13 +103,12 @@ jobs:
           </manifest>
           EOF
 
-          # 8. ملف الـ Build.gradle (إصلاح مشكلة البلوقن)
+          # 8. ملفات الـ Gradle (تصحيح الصراع)
           cat <<EOF > build.gradle
           buildscript {
               repositories { google(); mavenCentral() }
               dependencies { classpath 'com.android.tools.build:gradle:8.2.2' }
           }
-          allprojects { repositories { google(); mavenCentral() } }
           EOF
 
           cat <<EOF > app/build.gradle
@@ -144,8 +135,7 @@ jobs:
           }
           EOF
 
-          # 9. كود الـ Java (وضعه في المسار الصحيح)
-          # سأضع هنا الكود الأساسي المختصر لتجنب أي خطأ في الإزاحة
+          # 9. كود الـ Java المريغل
           cat <<EOF > app/src/main/java/com/rabie/iptv/MainActivity.java
           package com.rabie.iptv;
           import android.os.*;
@@ -251,7 +241,7 @@ jobs:
           }
           EOF
 
-          # 10. التشغيل النهائي
+          # 10. بناء التطبيق
           gradle wrapper --gradle-version 8.5
           chmod +x gradlew
           ./gradlew :app:assembleDebug --no-daemon
