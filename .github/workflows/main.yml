@@ -10,13 +10,11 @@ jobs:
 
       - name: Build_V32_Ultimate
         run: |
-          # تنظيف وبناء الهيكل من الصفر لضمان عدم حدوث خطأ
           rm -rf app settings.gradle build.gradle gradle.properties
           
           echo "android.useAndroidX=true" > gradle.properties
           echo "android.enableJetifier=true" >> gradle.properties
           
-          # ملف الإعدادات - التأكد من تعريف اسم المشروع
           cat <<EOF > settings.gradle
           rootProject.name = "Rabie_IPTV"
           include ':app'
@@ -24,7 +22,7 @@ jobs:
 
           mkdir -p app/src/main/java/com/rabie/iptv app/src/main/res/layout app/src/main/res/drawable app/src/main/res/xml
 
-          # واجهة المستخدم - المشغل يسار والقوائم يمين
+          # واجهة المستخدم: المشغل يسار (0.5) - العناصر وسط (0.28) - المجموعات يمين (0.22)
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -61,51 +59,14 @@ jobs:
                       <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_groups" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.22" android:background="#1c142e"/>
                   </LinearLayout>
               </LinearLayout>
-
+              
               <FrameLayout android:id="@+id/full_container" android:layout_width="match_parent" android:layout_height="match_parent" android:visibility="gone" android:background="#000" android:focusable="true" android:clickable="true">
                   <androidx.media3.ui.PlayerView android:id="@+id/full_player" android:layout_width="match_parent" android:layout_height="match_parent" app:resize_mode="fill" app:use_controller="false" />
-                  <ProgressBar android:id="@+id/loading_f" android:layout_width="70dp" android:layout_height="70dp" android:layout_gravity="center" android:visibility="gone" android:indeterminateTint="#ff9100"/>
               </FrameLayout>
           </RelativeLayout>
           EOF
 
-          # تصميم عنصر القائمة
-          cat <<EOF > app/src/main/res/layout/item_channel.xml
-          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent" android:layout_height="wrap_content"
-              android:orientation="horizontal" android:gravity="center_vertical" 
-              android:padding="8dp" android:focusable="true" android:background="@drawable/focus_highlight">
-              <TextView android:id="@+id/txt_name" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="#FFF" android:textSize="13sp" android:gravity="right" android:paddingRight="8dp"/>
-              <ImageView android:id="@+id/img_logo" android:layout_width="35dp" android:layout_height="35dp" android:scaleType="centerInside"/>
-          </LinearLayout>
-          EOF
-
-          # ملفات Drawable الضرورية
-          cat <<EOF > app/src/main/res/drawable/tab_button_style.xml
-          <selector xmlns:android="http://schemas.android.com/apk/res/android">
-              <item android:state_focused="true"><shape><solid android:color="#ff9100"/><corners android:radius="15dp"/></shape></item>
-              <item><shape><solid android:color="#1c142e"/><corners android:radius="15dp"/></shape></item>
-          </selector>
-          EOF
-          cat <<EOF > app/src/main/res/drawable/focus_highlight.xml
-          <selector xmlns:android="http://schemas.android.com/apk/res/android">
-              <item android:state_focused="true"><shape><solid android:color="#33ff9100"/><stroke android:width="2dp" android:color="#ff9100"/><corners android:radius="4dp"/></shape></item>
-              <item><shape><solid android:color="@android:color/transparent"/></shape></item>
-          </selector>
-          EOF
-
-          # بناء ملف build.gradle الرئيسي
-          cat <<EOF > build.gradle
-          buildscript {
-              repositories { google(); mavenCentral() }
-              dependencies { classpath 'com.android.tools.build:gradle:8.2.2' }
-          }
-          allprojects {
-              repositories { google(); mavenCentral() }
-          }
-          EOF
-
-          # بناء ملف build.gradle الخاص بالتطبيق
+          # ملف build.gradle الخاص بالتطبيق
           cat <<EOF > app/build.gradle
           plugins { id 'com.android.application' }
           android {
@@ -130,7 +91,18 @@ jobs:
           }
           EOF
 
-          # كود الـ Java (مع ميزات العودة للفوكيس، تسريع التحميل، ورسالة الخروج)
+          # ملف build.gradle الرئيسي
+          cat <<EOF > build.gradle
+          buildscript {
+              repositories { google(); mavenCentral() }
+              dependencies { classpath 'com.android.tools.build:gradle:8.2.2' }
+          }
+          allprojects {
+              repositories { google(); mavenCentral() }
+          }
+          EOF
+
+          # كود الـ Java مع نظام المسلسلات والأفلام والقنوات المنفصل
           cat <<EOF > app/src/main/java/com/rabie/iptv/MainActivity.java
           package com.rabie.iptv;
           import android.os.*;
@@ -162,7 +134,6 @@ jobs:
               private TextView tTitle;
               private PlayerView smallPV;
               private View mainUI, fullCont, splash;
-              private ProgressBar ps;
               private String currentMode = "live";
               private Handler handler = new Handler(Looper.getMainLooper());
               private long lastClickTime = 0;
@@ -173,18 +144,12 @@ jobs:
               protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
                   setContentView(R.layout.activity_main);
-
                   splash = findViewById(R.id.splash_screen); mainUI = findViewById(R.id.main_ui_container);
                   handler.postDelayed(() -> { splash.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE); }, 2000);
 
-                  // تحسين التحميل لعدم تجمد الصورة
-                  DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
-                      .setBufferDurationsMs(2000, 30000, 1000, 1500).build();
-                  player = new ExoPlayer.Builder(this).setLoadControl(loadControl).build();
-                  
+                  player = new ExoPlayer.Builder(this).build();
                   smallPV = findViewById(R.id.small_player);
                   fullCont = findViewById(R.id.full_container);
-                  ps = findViewById(R.id.loading_s);
                   smallPV.setPlayer(player);
 
                   rvG = findViewById(R.id.rv_groups); rvI = findViewById(R.id.rv_items);
@@ -193,7 +158,6 @@ jobs:
                   rvI.setLayoutManager(new LinearLayoutManager(this));
 
                   loadData();
-
                   getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
                       public void handleOnBackPressed() { 
                           if (fullCont.getVisibility() == View.VISIBLE) toggleFull(false); 
@@ -208,19 +172,13 @@ jobs:
               }
 
               private void showExitDialog() {
-                  new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
-                      .setTitle("خروج")
-                      .setMessage("هل تريد الخروج؟")
-                      .setPositiveButton("نعم", (d, w) -> finish())
-                      .setNegativeButton("لا", null).show();
+                  new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert).setTitle("خروج").setMessage("هل تريد الخروج؟").setPositiveButton("نعم", (d, w) -> finish()).setNegativeButton("لا", null).show();
               }
 
               private void toggleFull(boolean full) {
-                  if (full) {
-                      mainUI.setVisibility(View.GONE); fullCont.setVisibility(View.VISIBLE);
-                  } else {
+                  if (full) { mainUI.setVisibility(View.GONE); fullCont.setVisibility(View.VISIBLE); }
+                  else { 
                       fullCont.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE);
-                      // العودة للقناة ووضع الفوكيس عليها
                       if(currentChIndex != -1) {
                           rvI.scrollToPosition(currentChIndex);
                           handler.postDelayed(() -> {
@@ -233,39 +191,47 @@ jobs:
 
               private void setMode(String m) {
                   currentMode = m;
-                  Map<String, List<Ch>> d = m.equals("movie") ? movie : (m.equals("live") ? live : new HashMap<>());
-                  List<String> groups = new ArrayList<>(d.keySet());
-                  rvG.setAdapter(new GroupAdapter(groups, d));
-                  if (!groups.isEmpty()) { currentItems = d.get(groups.get(0)); rvI.setAdapter(new ItemAdapter(currentItems)); }
+                  if (m.equals("series")) {
+                      List<String> groups = new ArrayList<>(series.keySet());
+                      rvG.setAdapter(new GroupAdapter(groups, null, series));
+                      if (!groups.isEmpty()) loadSeasons(groups.get(0));
+                  } else {
+                      Map<String, List<Ch>> d = m.equals("movie") ? movie : live;
+                      List<String> groups = new ArrayList<>(d.keySet());
+                      rvG.setAdapter(new GroupAdapter(groups, d, null));
+                      if (!groups.isEmpty()) { currentItems = d.get(groups.get(0)); rvI.setAdapter(new ItemAdapter(currentItems)); }
+                  }
               }
 
+              private void loadSeasons(String gn) { Map<String, List<Ch>> sm = series.get(gn); List<Ch> si = new ArrayList<>(); if(sm != null) { for (String sn : sm.keySet()) { Ch s = new Ch(); s.n = sn; s.g = "SEASON_TYPE"; s.u = gn; if(!sm.get(sn).isEmpty()) s.l = sm.get(sn).get(0).l; si.add(s); } } rvI.setAdapter(new ItemAdapter(si)); }
+              private void loadEpisodes(String gn, String sn) { List<Ch> ep = series.get(gn).get(sn); rvI.setAdapter(new ItemAdapter(ep)); }
+
               class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.VH> {
-                  List<String> g; Map<String, List<Ch>> d;
-                  GroupAdapter(List<String> g, Map<String, List<Ch>> d) { this.g = g; this.d = d; }
-                  public VH onCreateViewHolder(ViewGroup p, int t) { return new VH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_channel, p, false)); }
-                  public void onBindViewHolder(VH h, int i) { 
-                      String gn = g.get(i); h.n.setText(gn);
-                      Glide.with(h.itemView).load(groupLogos.get(gn)).into(h.img);
-                      h.itemView.setOnClickListener(v -> { currentItems = d.get(gn); rvI.setAdapter(new ItemAdapter(currentItems)); }); 
-                  }
+                  List<String> g; Map<String, List<Ch>> d; Map<String, Map<String, List<Ch>>> s;
+                  GroupAdapter(List<String> g, Map<String, List<Ch>> d, Map<String, Map<String, List<Ch>>> s) { this.g = g; this.d = d; this.s = s; }
+                  public VH onCreateViewHolder(ViewGroup p, int t) { View v = LayoutInflater.from(p.getContext()).inflate(android.R.layout.simple_list_item_1, p, false); return new VH(v); }
+                  public void onBindViewHolder(VH h, int i) { String gn = g.get(i); ((TextView)h.itemView).setText(gn); h.itemView.setOnClickListener(v -> { if (currentMode.equals("series")) loadSeasons(gn); else { currentItems = d.get(gn); rvI.setAdapter(new ItemAdapter(currentItems)); } }); }
                   public int getItemCount() { return g.size(); }
-                  class VH extends RecyclerView.ViewHolder { TextView n; ImageView img; VH(View v) { super(v); n = v.findViewById(R.id.txt_name); img = v.findViewById(R.id.img_logo); } }
+                  class VH extends RecyclerView.ViewHolder { VH(View v) { super(v); } }
               }
 
               class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.VH> {
                   List<Ch> items; ItemAdapter(List<Ch> i) { items = i; }
-                  public VH onCreateViewHolder(ViewGroup p, int t) { return new VH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_channel, p, false)); }
+                  public VH onCreateViewHolder(ViewGroup p, int t) { View v = LayoutInflater.from(p.getContext()).inflate(android.R.layout.simple_list_item_1, p, false); return new VH(v); }
                   public void onBindViewHolder(VH h, int i) {
-                      final int pos = i; final Ch c = items.get(pos); h.n.setText(c.n); Glide.with(h.itemView).load(c.l).into(h.img);
+                      final int pos = i; final Ch c = items.get(pos); ((TextView)h.itemView).setText(c.n);
                       h.itemView.setOnClickListener(v -> {
-                          long t = System.currentTimeMillis(); 
-                          if (t - lastClickTime < 400) toggleFull(true); 
-                          else { currentCh = c; currentChIndex = pos; tTitle.setText(c.n); player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play(); } 
-                          lastClickTime = t; 
+                          if ("SEASON_TYPE".equals(c.g)) loadEpisodes(c.u, c.n);
+                          else { 
+                              long t = System.currentTimeMillis(); 
+                              if (t - lastClickTime < 400) toggleFull(true); 
+                              else { currentCh = c; currentChIndex = pos; tTitle.setText(c.n); player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play(); } 
+                              lastClickTime = t; 
+                          }
                       });
                   }
                   public int getItemCount() { return items.size(); }
-                  class VH extends RecyclerView.ViewHolder { TextView n; ImageView img; VH(View v) { super(v); n = v.findViewById(R.id.txt_name); img = v.findViewById(R.id.img_logo); } }
+                  class VH extends RecyclerView.ViewHolder { VH(View v) { super(v); } }
               }
 
               private void loadData() { String url = "https://gist.githubusercontent.com/rabiebobo3/d498347610d7312b3e9be88093117620/raw/list.m3u"; Volley.newRequestQueue(this).add(new StringRequest(Request.Method.GET, url, res -> { parse(res); setMode("live"); }, null)); }
@@ -277,23 +243,21 @@ jobs:
                           cur.n = l.split(",").length > 1 ? l.split(",")[1].trim() : "Unknown"; 
                           cur.g = l.contains("group-title=\"") ? l.split("group-title=\"")[1].split("\"")[0] : "Other"; 
                           cur.l = l.contains("tvg-logo=\"") ? l.split("tvg-logo=\"")[1].split("\"")[0] : ""; 
-                          if (!groupLogos.containsKey(cur.g)) groupLogos.put(cur.g, cur.l);
                       } else if (l.startsWith("http") && cur != null) {
-                          cur.u = l.trim();
-                          if (cur.g.toLowerCase().contains("movie")) { if (!movie.containsKey(cur.g)) movie.put(cur.g, new ArrayList<>()); movie.get(cur.g).add(cur); }
+                          cur.u = l.trim(); String g = cur.g.toLowerCase();
+                          if (g.contains("movie") || g.contains("افلام")) { if (!movie.containsKey(cur.g)) movie.put(cur.g, new ArrayList<>()); movie.get(cur.g).add(cur); }
+                          else if (g.contains("series") || g.contains("مسلسل")) { if (!series.containsKey(cur.g)) series.put(cur.g, new LinkedHashMap<>()); String ssn = "Season 1"; if (!series.get(cur.g).containsKey(ssn)) series.get(cur.g).put(ssn, new ArrayList<>()); series.get(cur.g).get(ssn).add(cur); }
                           else { if (!live.containsKey(cur.g)) live.put(cur.g, new ArrayList<>()); live.get(cur.g).add(cur); }
                           cur = null;
                       }
                   }
               }
-              protected void onStop() { super.onStop(); if(player != null) player.release(); }
           }
           EOF
 
-          # Manifest
+          # ملف المانيفست
           echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://schemas.android.com/apk/res/android"><uses-permission android:name="android.permission.INTERNET"/><application android:theme="@style/Theme.AppCompat.NoActionBar" android:usesCleartextTraffic="true" android:label="Rabie Pro V32"><activity android:name="com.rabie.iptv.MainActivity" android:exported="true" android:screenOrientation="landscape"><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity></application></manifest>' > app/src/main/AndroidManifest.xml
           
-          # البناء باستخدام Gradle Wrapper المدمج
           gradle wrapper --gradle-version 8.5
           chmod +x gradlew
           ./gradlew :app:assembleDebug --no-daemon
