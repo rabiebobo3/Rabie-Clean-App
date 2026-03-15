@@ -164,7 +164,6 @@ jobs:
               private Map<String, Map<String, List<Ch>>> series = new LinkedHashMap<>();
               private List<Ch> favList = new ArrayList<>(), currentItems = new ArrayList<>();
               private Ch currentCh;
-              private int currentChIndex = -1;
               private RecyclerView rvG, rvI;
               private TextView tTitle, tTime, tFullChName;
               private PlayerView smallPV, fullPV;
@@ -196,6 +195,8 @@ jobs:
                   btnPP = findViewById(R.id.btn_play_pause);
 
                   smallPV.setPlayer(player);
+                  fullPV.setPlayer(player);
+
                   player.addListener(new Player.Listener() {
                       public void onPlaybackStateChanged(int s) {
                           int v = (s == Player.STATE_BUFFERING) ? View.VISIBLE : View.GONE;
@@ -207,10 +208,13 @@ jobs:
                   });
 
                   seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                      public void onProgressChanged(SeekBar sb, int p, boolean f) { if(f) player.seekTo(p); }
+                      public void onProgressChanged(SeekBar sb, int p, boolean f) { if(f) { player.seekTo(p); showOverlay(); } }
                       public void onStartTrackingTouch(SeekBar sb) {}
                       public void onStopTrackingTouch(SeekBar sb) {}
                   });
+
+                  // تعديل اللمس: أي لمسة للشاشة تظهر الأزرار
+                  fullCont.setOnClickListener(v -> showOverlay());
 
                   getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
                       public void handleOnBackPressed() {
@@ -231,9 +235,9 @@ jobs:
                   findViewById(R.id.tab_series).setOnClickListener(v -> setMode("series"));
                   findViewById(R.id.tab_fav).setOnClickListener(v -> setMode("fav"));
                   findViewById(R.id.btn_toggle_fav).setOnClickListener(v -> toggleFav());
-                  btnPP.setOnClickListener(v -> { if(player.isPlaying()) player.pause(); else player.play(); });
-                  findViewById(R.id.btn_rew).setOnClickListener(v -> player.seekTo(player.getCurrentPosition() - 15000));
-                  findViewById(R.id.btn_ffwd).setOnClickListener(v -> player.seekTo(player.getCurrentPosition() + 15000));
+                  btnPP.setOnClickListener(v -> { if(player.isPlaying()) player.pause(); else player.play(); showOverlay(); });
+                  findViewById(R.id.btn_rew).setOnClickListener(v -> { player.seekTo(player.getCurrentPosition() - 15000); showOverlay(); });
+                  findViewById(R.id.btn_ffwd).setOnClickListener(v -> { player.seekTo(player.getCurrentPosition() + 15000); showOverlay(); });
               }
 
               private void showExitDialog() {
@@ -245,7 +249,12 @@ jobs:
               @Override
               public boolean onKeyDown(int keyCode, KeyEvent event) {
                   if (fullCont.getVisibility() == View.VISIBLE) {
+                      // استدعاء الشريط عند أي ضغط على الريموت
                       showOverlay();
+                      if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_ENTER) {
+                         if(player.isPlaying()) player.pause(); else player.play();
+                         return true;
+                      }
                       if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) { player.seekTo(player.getCurrentPosition() + 10000); return true; }
                       if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) { player.seekTo(player.getCurrentPosition() - 10000); return true; }
                   }
@@ -255,10 +264,9 @@ jobs:
               private void toggleFull(boolean full) {
                   if (full) {
                       mainUI.setVisibility(View.GONE); fullCont.setVisibility(View.VISIBLE);
-                      PlayerView.switchTargetView(player, smallPV, fullPV); showOverlay();
+                      showOverlay();
                   } else {
                       fullCont.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE);
-                      PlayerView.switchTargetView(player, fullPV, smallPV);
                   }
               }
 
@@ -266,7 +274,8 @@ jobs:
                   overlay.setVisibility(View.VISIBLE);
                   tFullChName.setText(currentCh != null ? currentCh.n : "");
                   vodControls.setVisibility(currentMode.equals("live") ? View.GONE : View.VISIBLE);
-                  handler.removeCallbacks(hideOverlay); handler.postDelayed(hideOverlay, 5000);
+                  handler.removeCallbacks(hideOverlay); 
+                  handler.postDelayed(hideOverlay, 5000); // يختفي بعد 5 ثواني
               }
               private Runnable hideOverlay = () -> overlay.setVisibility(View.GONE);
 
