@@ -1,4 +1,4 @@
-name: Rabie_Pro_V32_Final_Fix
+name: Rabie_Pro_V32_Deep_Memory_Fix
 on: [push]
 jobs:
   build:
@@ -8,7 +8,7 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Build_V32_Perfect
+      - name: Build_V32_Professional
         run: |
           rm -rf app settings.gradle build.gradle gradle.properties .gradle
           echo "android.useAndroidX=true" > gradle.properties
@@ -39,11 +39,7 @@ jobs:
               android:layout_width="match_parent" android:layout_height="match_parent" 
               android:background="#0a0714" android:keepScreenOn="true">
               
-              <LinearLayout android:id="@+id/splash_screen" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#0a0714" android:gravity="center" android:elevation="20dp">
-                  <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE PRO" android:textColor="#ff9100" android:textSize="50sp" android:textStyle="bold"/>
-              </LinearLayout>
-
-              <LinearLayout android:id="@+id/main_ui_container" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:visibility="gone">
+              <LinearLayout android:id="@+id/main_ui_container" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
                   <LinearLayout android:layout_width="match_parent" android:layout_height="60dp" android:background="#000" android:gravity="center_vertical" android:padding="8dp">
                       <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RABIE PRO" android:textColor="#ff9100" android:textStyle="bold" android:textSize="18sp" android:layout_marginRight="15dp"/>
                       <View android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"/>
@@ -61,7 +57,7 @@ jobs:
                           </FrameLayout>
                           <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.35" android:padding="15dp" android:background="#1c142e" android:orientation="vertical">
                               <TextView android:id="@+id/txt_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="اختر محتوى" android:textColor="#ff9100" android:textSize="18sp" android:textStyle="bold" android:maxLines="1"/>
-                              <Button android:id="@+id/btn_toggle_fav" android:layout_width="wrap_content" android:layout_height="38dp" android:text="⭐ مفضلة" android:layout_marginTop="10dp" android:focusable="true" android:background="@drawable/focus_highlight" android:paddingHorizontal="15dp"/>
+                              <Button android:id="@+id/btn_toggle_fav" android:layout_width="wrap_content" android:layout_height="38dp" android:text="⭐ إضافة للمفضلة" android:layout_marginTop="10dp" android:focusable="true" android:background="@drawable/focus_highlight" android:paddingHorizontal="15dp" android:textColor="#FFF"/>
                           </LinearLayout>
                       </LinearLayout>
                       <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_items" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.28" android:background="#130d21"/>
@@ -74,29 +70,21 @@ jobs:
                   <ProgressBar android:id="@+id/loading_f" android:layout_width="70dp" android:layout_height="70dp" android:layout_gravity="center" android:visibility="gone" android:indeterminateTint="#ff9100"/>
                   
                   <RelativeLayout android:id="@+id/overlay_full" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#99000000" android:visibility="gone">
-                      <TextView android:id="@+id/full_ch_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentTop="true" android:layout_centerHorizontal="true" android:layout_marginTop="20dp" android:textColor="#ff9100" android:textSize="20sp" android:textStyle="bold"/>
+                      <TextView android:id="@+id/full_ch_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentTop="true" android:layout_centerHorizontal="true" android:layout_marginTop="20dp" android:textColor="#ff9100" android:textSize="22sp" android:textStyle="bold"/>
                       
                       <LinearLayout android:id="@+id/vod_controls" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:layout_alignParentBottom="true" android:padding="30dp" android:gravity="center">
                           <SeekBar android:id="@+id/full_seekbar" android:layout_width="match_parent" android:layout_height="wrap_content" android:progressTint="#ff9100" android:thumbTint="#ff9100" android:focusable="true"/>
                           <TextView android:id="@+id/txt_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="00:00 / 00:00" android:textColor="#FFF" android:layout_marginTop="5dp"/>
                           
                           <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:layout_marginTop="10dp">
-                              <ImageButton android:id="@+id/btn_rew" android:layout_width="55dp" android:layout_height="55dp" android:src="@android:drawable/ic_media_rew" android:background="@drawable/round_btn" android:layout_margin="10dp" android:focusable="true" android:contentDescription="Rewind"/>
-                              <ImageButton android:id="@+id/btn_play_pause" android:layout_width="70dp" android:layout_height="70dp" android:src="@android:drawable/ic_media_pause" android:background="@drawable/round_btn_orange" android:layout_margin="10dp" android:focusable="true" android:contentDescription="PlayPause"/>
-                              <ImageButton android:id="@+id/btn_ffwd" android:layout_width="55dp" android:layout_height="55dp" android:src="@android:drawable/ic_media_ff" android:background="@drawable/round_btn" android:layout_margin="10dp" android:focusable="true" android:contentDescription="FastForward"/>
+                              <ImageButton android:id="@+id/btn_rew" android:layout_width="55dp" android:layout_height="55dp" android:src="@android:drawable/ic_media_rew" android:background="@drawable/round_btn" android:layout_margin="10dp" android:focusable="true"/>
+                              <ImageButton android:id="@+id/btn_play_pause" android:layout_width="70dp" android:layout_height="70dp" android:src="@android:drawable/ic_media_pause" android:background="@drawable/round_btn_orange" android:layout_margin="10dp" android:focusable="true"/>
+                              <ImageButton android:id="@+id/btn_ffwd" android:layout_width="55dp" android:layout_height="55dp" android:src="@android:drawable/ic_media_ff" android:background="@drawable/round_btn" android:layout_margin="10dp" android:focusable="true"/>
                           </LinearLayout>
                       </LinearLayout>
                   </RelativeLayout>
               </FrameLayout>
           </RelativeLayout>
-          EOF
-
-          cat <<EOF > app/src/main/res/drawable/round_btn.xml
-          <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval"><solid android:color="#33FFFFFF"/><stroke android:width="1dp" android:color="#66FFFFFF"/></shape>
-          EOF
-
-          cat <<EOF > app/src/main/res/drawable/round_btn_orange.xml
-          <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval"><solid android:color="#ff9100"/></shape>
           EOF
 
           cat <<EOF > app/src/main/res/drawable/tab_button_style.xml
@@ -167,11 +155,12 @@ jobs:
               private RecyclerView rvG, rvI;
               private TextView tTitle, tTime, tFullChName;
               private PlayerView smallPV, fullPV;
-              private View mainUI, fullCont, overlay, vodControls, splash;
+              private View mainUI, fullCont, overlay, vodControls;
               private SeekBar seekBar;
               private ProgressBar ps, pf;
-              private ImageButton btnPP;
               private String currentMode = "live";
+              private String lastSeriesGroup, lastSeasonName;
+              private int lastItemPos = -1;
               private Handler handler = new Handler(Looper.getMainLooper());
               private long lastClickTime = 0;
 
@@ -183,42 +172,33 @@ jobs:
                   setContentView(R.layout.activity_main);
                   hideSystemUI();
 
-                  splash = findViewById(R.id.splash_screen); mainUI = findViewById(R.id.main_ui_container);
-                  handler.postDelayed(() -> { splash.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE); }, 2000);
-
-                  player = new ExoPlayer.Builder(this).build();
+                  mainUI = findViewById(R.id.main_ui_container);
+                  
+                  // تحسين المشغل للإنترنت الضعيف
+                  DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
+                      .setBufferDurationsMs(25000, 60000, 1500, 3000).build();
+                  player = new ExoPlayer.Builder(this).setLoadControl(loadControl).build();
+                  
                   smallPV = findViewById(R.id.small_player); fullPV = findViewById(R.id.full_player);
                   fullCont = findViewById(R.id.full_container); overlay = findViewById(R.id.overlay_full);
                   tTime = findViewById(R.id.txt_time); seekBar = findViewById(R.id.full_seekbar);
                   tFullChName = findViewById(R.id.full_ch_name); vodControls = findViewById(R.id.vod_controls);
                   ps = findViewById(R.id.loading_s); pf = findViewById(R.id.loading_f);
-                  btnPP = findViewById(R.id.btn_play_pause);
 
                   smallPV.setPlayer(player);
-                  fullPV.setPlayer(player);
-
+                  
                   player.addListener(new Player.Listener() {
                       public void onPlaybackStateChanged(int s) {
                           int v = (s == Player.STATE_BUFFERING) ? View.VISIBLE : View.GONE;
                           ps.setVisibility(v); pf.setVisibility(v);
                       }
-                      public void onIsPlayingChanged(boolean playing) {
-                          btnPP.setImageResource(playing ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
-                      }
                   });
-
-                  seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                      public void onProgressChanged(SeekBar sb, int p, boolean f) { if(f) { player.seekTo(p); showOverlay(); } }
-                      public void onStartTrackingTouch(SeekBar sb) {}
-                      public void onStopTrackingTouch(SeekBar sb) {}
-                  });
-
-                  // تعديل اللمس: أي لمسة للشاشة تظهر الأزرار
-                  fullCont.setOnClickListener(v -> showOverlay());
 
                   getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
                       public void handleOnBackPressed() {
                           if (fullCont.getVisibility() == View.VISIBLE) toggleFull(false); 
+                          else if ("EPISODE_VIEW".equals(currentMode)) loadSeasons(lastSeriesGroup);
+                          else if ("SEASON_VIEW".equals(currentMode)) setMode("series");
                           else showExitDialog();
                       }
                   });
@@ -228,56 +208,34 @@ jobs:
                   rvG.setLayoutManager(new LinearLayoutManager(this));
                   rvI.setLayoutManager(new LinearLayoutManager(this));
 
-                  loadFavs(); loadData(); updateProgress();
-                  
+                  loadFavs(); loadData(); 
                   findViewById(R.id.tab_live).setOnClickListener(v -> setMode("live"));
                   findViewById(R.id.tab_movie).setOnClickListener(v -> setMode("movie"));
                   findViewById(R.id.tab_series).setOnClickListener(v -> setMode("series"));
                   findViewById(R.id.tab_fav).setOnClickListener(v -> setMode("fav"));
                   findViewById(R.id.btn_toggle_fav).setOnClickListener(v -> toggleFav());
-                  btnPP.setOnClickListener(v -> { if(player.isPlaying()) player.pause(); else player.play(); showOverlay(); });
-                  findViewById(R.id.btn_rew).setOnClickListener(v -> { player.seekTo(player.getCurrentPosition() - 15000); showOverlay(); });
-                  findViewById(R.id.btn_ffwd).setOnClickListener(v -> { player.seekTo(player.getCurrentPosition() + 15000); showOverlay(); });
-              }
-
-              private void showExitDialog() {
-                  new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
-                      .setTitle("خروج").setMessage("هل تريد الخروج؟")
-                      .setPositiveButton("نعم", (d, w) -> finish()).setNegativeButton("لا", null).show();
-              }
-
-              @Override
-              public boolean onKeyDown(int keyCode, KeyEvent event) {
-                  if (fullCont.getVisibility() == View.VISIBLE) {
-                      // استدعاء الشريط عند أي ضغط على الريموت
-                      showOverlay();
-                      if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_ENTER) {
-                         if(player.isPlaying()) player.pause(); else player.play();
-                         return true;
-                      }
-                      if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) { player.seekTo(player.getCurrentPosition() + 10000); return true; }
-                      if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) { player.seekTo(player.getCurrentPosition() - 10000); return true; }
-                  }
-                  return super.onKeyDown(keyCode, event);
+                  
+                  updateProgress();
               }
 
               private void toggleFull(boolean full) {
                   if (full) {
                       mainUI.setVisibility(View.GONE); fullCont.setVisibility(View.VISIBLE);
+                      PlayerView.switchTargetView(player, smallPV, fullPV);
                       showOverlay();
                   } else {
                       fullCont.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE);
+                      PlayerView.switchTargetView(player, fullPV, smallPV);
+                      // العودة مع تتبع القناة
+                      if (lastItemPos != -1) {
+                          rvI.postDelayed(() -> {
+                              rvI.smoothScrollToPosition(lastItemPos);
+                              View v = rvI.getLayoutManager().findViewByPosition(lastItemPos);
+                              if (v != null) v.requestFocus();
+                          }, 200);
+                      }
                   }
               }
-
-              private void showOverlay() {
-                  overlay.setVisibility(View.VISIBLE);
-                  tFullChName.setText(currentCh != null ? currentCh.n : "");
-                  vodControls.setVisibility(currentMode.equals("live") ? View.GONE : View.VISIBLE);
-                  handler.removeCallbacks(hideOverlay); 
-                  handler.postDelayed(hideOverlay, 5000); // يختفي بعد 5 ثواني
-              }
-              private Runnable hideOverlay = () -> overlay.setVisibility(View.GONE);
 
               private void setMode(String m) {
                   currentMode = m;
@@ -294,8 +252,18 @@ jobs:
                   }
               }
 
-              private void loadSeasons(String gn) { Map<String, List<Ch>> sm = series.get(gn); List<Ch> si = new ArrayList<>(); if(sm != null) { for (String sn : sm.keySet()) { Ch s = new Ch(); s.n = sn; s.g = "SEASON_TYPE"; s.u = gn; si.add(s); } } rvI.setAdapter(new ItemAdapter(si)); }
-              private void loadEpisodes(String gn, String sn) { List<Ch> ep = series.get(gn).get(sn); List<Ch> lb = new ArrayList<>(); Ch b = new Ch(); b.n = "◀ رجوع"; b.g = "BACK_TYPE"; b.u = gn; lb.add(b); lb.addAll(ep); rvI.setAdapter(new ItemAdapter(lb)); }
+              private void loadSeasons(String gn) { 
+                  currentMode = "SEASON_VIEW"; lastSeriesGroup = gn;
+                  Map<String, List<Ch>> sm = series.get(gn); List<Ch> si = new ArrayList<>(); 
+                  if(sm != null) for (String sn : sm.keySet()) { Ch s = new Ch(); s.n = sn; s.g = "SEASON_TYPE"; s.u = gn; si.add(s); }
+                  rvI.setAdapter(new ItemAdapter(si));
+              }
+
+              private void loadEpisodes(String gn, String sn) { 
+                  currentMode = "EPISODE_VIEW"; lastSeasonName = sn;
+                  List<Ch> ep = series.get(gn).get(sn); 
+                  rvI.setAdapter(new ItemAdapter(ep));
+              }
 
               class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.VH> {
                   List<String> g; Map<String, List<Ch>> d; Map<String, Map<String, List<Ch>>> s;
@@ -303,11 +271,10 @@ jobs:
                   public VH onCreateViewHolder(ViewGroup p, int t) { return new VH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_channel, p, false)); }
                   public void onBindViewHolder(VH h, int i) {
                       String gn = g.get(i); h.n.setText(gn);
-                      if (d != null && d.get(gn) != null) Glide.with(h.itemView).load(d.get(gn).get(0).l).into(h.img);
                       h.itemView.setOnClickListener(v -> { if (currentMode.equals("series")) loadSeasons(gn); else if (d != null) { currentItems = d.get(gn); rvI.setAdapter(new ItemAdapter(currentItems)); } });
                   }
                   public int getItemCount() { return g.size(); }
-                  class VH extends RecyclerView.ViewHolder { TextView n; ImageView img; VH(View v) { super(v); n = v.findViewById(R.id.txt_name); img = v.findViewById(R.id.img_logo); } }
+                  class VH extends RecyclerView.ViewHolder { TextView n; VH(View v) { super(v); n = v.findViewById(R.id.txt_name); } }
               }
 
               class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.VH> {
@@ -315,28 +282,37 @@ jobs:
                   public VH onCreateViewHolder(ViewGroup p, int t) { return new VH(LayoutInflater.from(p.getContext()).inflate(R.layout.item_channel, p, false)); }
                   public void onBindViewHolder(VH h, int i) {
                       Ch c = items.get(i); h.n.setText(c.n); Glide.with(h.itemView).load(c.l).into(h.img);
+                      
+                      // إذا كانت القناة هي المشغلة حالياً، اجعلها تأخذ الفوكس عند التحميل
+                      if (currentCh != null && c.u.equals(currentCh.u)) h.itemView.requestFocus();
+
                       h.itemView.setOnClickListener(v -> {
                           if ("SEASON_TYPE".equals(c.g)) loadEpisodes(c.u, c.n);
-                          else if ("BACK_TYPE".equals(c.g)) loadSeasons(c.u);
-                          else { long t = System.currentTimeMillis(); if (t - lastClickTime < 400) toggleFull(true); else { currentCh = c; tTitle.setText(c.n); player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play(); } lastClickTime = t; }
+                          else { 
+                              long t = System.currentTimeMillis();
+                              lastItemPos = i;
+                              if (t - lastClickTime < 400) toggleFull(true); 
+                              else { 
+                                  currentCh = c; tTitle.setText(c.n); 
+                                  player.setMediaItem(MediaItem.fromUri(c.u)); 
+                                  player.prepare(); player.play(); 
+                              }
+                              lastClickTime = t; 
+                          }
                       });
                   }
                   public int getItemCount() { return items.size(); }
                   class VH extends RecyclerView.ViewHolder { TextView n; ImageView img; VH(View v) { super(v); n = v.findViewById(R.id.txt_name); img = v.findViewById(R.id.img_logo); } }
               }
 
-              private void updateProgress() {
-                  if (player != null && fullCont.getVisibility() == View.VISIBLE) {
-                      long dur = player.getDuration(); long pos = player.getCurrentPosition();
-                      if (dur > 0) { seekBar.setMax((int) dur); seekBar.setProgress((int) pos); tTime.setText(formatTime(pos) + " / " + formatTime(dur)); }
-                  }
-                  handler.postDelayed(() -> updateProgress(), 1000);
-              }
+              private void showOverlay() { overlay.setVisibility(View.VISIBLE); handler.removeCallbacks(hideOverlay); handler.postDelayed(hideOverlay, 5000); }
+              private Runnable hideOverlay = () -> overlay.setVisibility(View.GONE);
+              private void updateProgress() { if (player != null && fullCont.getVisibility() == View.VISIBLE) { long dur = player.getDuration(); long pos = player.getCurrentPosition(); if (dur > 0) { seekBar.setMax((int) dur); seekBar.setProgress((int) pos); tTime.setText(formatTime(pos) + " / " + formatTime(dur)); } } handler.postDelayed(this::updateProgress, 1000); }
               private String formatTime(long ms) { long s = (ms/1000)%60, m = (ms/60000)%60, h = (ms/3600000); return h>0 ? String.format("%02d:%02d:%02d",h,m,s) : String.format("%02d:%02d",m,s); }
               private void hideSystemUI() { getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN); }
               private void loadData() { String url = "https://gist.githubusercontent.com/rabiebobo3/d498347610d7312b3e9be88093117620/raw/list.m3u"; Volley.newRequestQueue(this).add(new StringRequest(Request.Method.GET, url, res -> { parse(res); setMode("live"); }, null)); }
               private void loadFavs() { String j = getSharedPreferences("p", MODE_PRIVATE).getString("f", "[]"); favList = new Gson().fromJson(j, new TypeToken<List<Ch>>(){}.getType()); }
-              private void toggleFav() { if (currentCh == null) return; boolean ex = false; for(int i=0; i<favList.size(); i++) if(favList.get(i).u.equals(currentCh.u)) { favList.remove(i); ex=true; break; } if(!ex) favList.add(currentCh); getSharedPreferences("p", MODE_PRIVATE).edit().putString("f", new Gson().toJson(favList)).apply(); }
+              private void toggleFav() { if (currentCh == null) return; boolean ex = false; for(int i=0; i<favList.size(); i++) if(favList.get(i).u.equals(currentCh.u)) { favList.remove(i); ex=true; break; } if(!ex) favList.add(currentCh); getSharedPreferences("p", MODE_PRIVATE).edit().putString("f", new Gson().toJson(favList)).apply(); Toast.makeText(this, "تم تحديث المفضلة", Toast.LENGTH_SHORT).show(); }
               private void parse(String text) {
                   String[] lines = text.split("\n"); Ch cur = null; 
                   for (String l : lines) {
@@ -347,12 +323,16 @@ jobs:
                       } else if (l.startsWith("http") && cur != null) {
                           cur.u = l.trim(); String g = cur.g.toLowerCase();
                           if (g.contains("movie") || g.contains("افلام")) { if (!movie.containsKey(cur.g)) movie.put(cur.g, new ArrayList<Ch>()); movie.get(cur.g).add(cur); }
-                          else if (g.contains("series") || g.contains("مسلسل")) { if (!series.containsKey(cur.g)) series.put(cur.g, new LinkedHashMap<String, List<Ch>>()); String ssn = "Season 1"; if (!series.get(cur.g).containsKey(ssn)) series.get(cur.g).put(ssn, new ArrayList<Ch>()); series.get(cur.g).get(ssn).add(cur); }
-                          else { if (!live.containsKey(cur.g)) live.put(cur.g, new ArrayList<Ch>()); live.get(cur.g).add(cur); }
+                          else if (g.contains("series") || g.contains("مسلسل")) { 
+                              if (!series.containsKey(cur.g)) series.put(cur.g, new LinkedHashMap<String, List<Ch>>()); 
+                              String ssn = "Season 1"; if (!series.get(cur.g).containsKey(ssn)) series.get(cur.g).put(ssn, new ArrayList<Ch>()); 
+                              series.get(cur.g).get(ssn).add(cur); 
+                          } else { if (!live.containsKey(cur.g)) live.put(cur.g, new ArrayList<Ch>()); live.get(cur.g).add(cur); }
                           cur = null;
                       }
                   }
               }
+              private void showExitDialog() { new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert).setTitle("خروج").setMessage("هل تريد الخروج؟").setPositiveButton("نعم", (d, w) -> finish()).setNegativeButton("لا", null).show(); }
               protected void onStop() { super.onStop(); if(player != null) player.release(); }
           }
           EOF
@@ -365,4 +345,4 @@ jobs:
 
       - name: UI_V32_Upload
         uses: actions/upload-artifact@v4
-        with: { name: Rabie_Pro_V32_Final, path: app/build/outputs/apk/debug/*.apk }
+        with: { name: Rabie_Pro_V32_Professional, path: app/build/outputs/apk/debug/*.apk }
