@@ -26,7 +26,7 @@ jobs:
 
           echo '<?xml version="1.0" encoding="utf-8"?><network-security-config><base-config cleartextTrafficPermitted="true"/></network-security-config>' > app/src/main/res/xml/network_security_config.xml
 
-          # واجهة المستخدم كما طلبتها - ترتيب يمين يسار وشريط تحكم VOD
+          # واجهة المستخدم: تم عكس الترتيب (المشغل يسار، القوائم يمين)
           cat <<EOF > app/src/main/res/layout/activity_main.xml
           <?xml version="1.0" encoding="utf-8"?>
           <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -49,8 +49,6 @@ jobs:
                   </LinearLayout>
 
                   <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="horizontal">
-                      <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_groups" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.22" android:background="#1c142e"/>
-                      <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_items" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.28" android:background="#130d21"/>
                       <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.5" android:orientation="vertical">
                           <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="0.65">
                               <androidx.media3.ui.PlayerView android:id="@+id/small_player" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#000" app:use_controller="false"/>
@@ -61,6 +59,9 @@ jobs:
                               <Button android:id="@+id/btn_toggle_fav" android:layout_width="wrap_content" android:layout_height="38dp" android:text="⭐ مفضلة" android:layout_marginTop="10dp" android:focusable="true" android:background="@drawable/focus_highlight" android:paddingHorizontal="15dp"/>
                           </LinearLayout>
                       </LinearLayout>
+                      
+                      <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_items" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.28" android:background="#130d21"/>
+                      <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_groups" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.22" android:background="#1c142e"/>
                   </LinearLayout>
               </LinearLayout>
 
@@ -83,7 +84,6 @@ jobs:
           </RelativeLayout>
           EOF
 
-          # ملفات Drawable
           cat <<EOF > app/src/main/res/drawable/round_btn.xml
           <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval"><solid android:color="#33FFFFFF"/><stroke android:width="1dp" android:color="#66FFFFFF"/></shape>
           EOF
@@ -127,7 +127,6 @@ jobs:
           }
           EOF
 
-          # كود الجافا - تم تعديل اللوقوات وسرعة التحميل ورسالة الخروج وتثبيت الفوكيس دون المساس بالباقي
           cat <<EOF > app/src/main/java/com/rabie/iptv/MainActivity.java
           package com.rabie.iptv;
           import android.os.*;
@@ -164,7 +163,6 @@ jobs:
               private ImageButton btnPP;
               private String currentMode = "live";
               private Handler handler = new Handler(Looper.getMainLooper());
-              private long lastClickTime = 0;
 
               static class Ch { String n, u, g, l; }
 
@@ -177,9 +175,9 @@ jobs:
                   splash = findViewById(R.id.splash_screen); mainUI = findViewById(R.id.main_ui_container);
                   handler.postDelayed(() -> { splash.setVisibility(View.GONE); mainUI.setVisibility(View.VISIBLE); }, 2000);
 
-                  // إعدادات تسريع التحميل ومنع التجمد
+                  // دالة تحميل قوية جداً تمنع التجمد وتسرع البث
                   DefaultLoadControl loadControl = new DefaultLoadControl.Builder()
-                      .setBufferDurationsMs(1000, 30000, 500, 1000)
+                      .setBufferDurationsMs(1500, 50000, 1000, 1500)
                       .setPrioritizeTimeOverSizeThresholds(true).build();
                   
                   player = new ExoPlayer.Builder(this).setLoadControl(loadControl).build();
@@ -196,7 +194,7 @@ jobs:
                       public void onPlaybackStateChanged(int s) {
                           int v = (s == Player.STATE_BUFFERING) ? View.VISIBLE : View.GONE;
                           ps.setVisibility(v); pf.setVisibility(v);
-                          if(s == Player.STATE_IDLE) player.prepare();
+                          if(s == Player.STATE_IDLE) player.prepare(); // إعادة محاولة التحميل تلقائياً
                       }
                       public void onIsPlayingChanged(boolean p) { btnPP.setImageResource(p ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play); }
                   });
@@ -343,7 +341,10 @@ jobs:
                           else { 
                               long t = System.currentTimeMillis(); 
                               if (t - lastClickTime < 400) toggleFull(true); 
-                              else { currentCh = c; currentChIndex = pos; tTitle.setText(c.n); player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play(); } 
+                              else { 
+                                  currentCh = c; currentChIndex = pos; tTitle.setText(c.n); 
+                                  player.setMediaItem(MediaItem.fromUri(c.u)); player.prepare(); player.play(); 
+                              } 
                               lastClickTime = t; 
                           }
                       });
